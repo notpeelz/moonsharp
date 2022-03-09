@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using MoonSharp.Interpreter.Compatibility;
 
 namespace MoonSharp.Interpreter.Interop.Converters
@@ -73,6 +75,24 @@ namespace MoonSharp.Interpreter.Interop.Converters
 			}
 		}
 
+		public static MethodInfo HasImplicitConversion(Type baseType, Type targetType)
+		{
+			MethodInfo found = null;
+			baseType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+				.Where(mi => mi.Name == "op_Implicit" && mi.ReturnType == targetType)
+				.Any(mi => {
+					ParameterInfo pi = mi.GetParameters().FirstOrDefault();
+					if (pi != null && pi.ParameterType == baseType)
+					{
+						found = mi;
+						return true;
+					}
+					else
+						return false;
+				});
+
+			return found;
+		}
 
 		/// <summary>
 		/// Converts a DynValue to a CLR object of a specific type
@@ -171,6 +191,13 @@ namespace MoonSharp.Interpreter.Interop.Converters
 
 						if (udDesc.IsTypeCompatible(desiredType, udObj))
 							return udObj;
+
+						var conv = HasImplicitConversion(udObj.GetType(), desiredType);
+
+						if (conv != null)
+						{
+							return conv.Invoke(null, new[] { udObj });
+						}
 
 						if (stringSubType != StringConversions.StringSubtype.None)
 							str = udDesc.AsString(udObj);
@@ -287,7 +314,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						var udObj = value.UserData.Object;
 						var udDesc = value.UserData.Descriptor;
 
-						if (udDesc.IsTypeCompatible(desiredType, udObj))
+						if (udDesc.IsTypeCompatible(desiredType, udObj) || HasImplicitConversion(udObj.GetType(), desiredType) != null)
 							return WEIGHT_EXACT_MATCH;
 
 						if (stringSubType != StringConversions.StringSubtype.None)
