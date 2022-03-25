@@ -115,6 +115,11 @@ namespace MoonSharp.Interpreter.Interop.Converters
 			if (desiredType == typeof(object))
 				return DynValueToObject(value);
 
+			if (desiredType.IsGenericParameter)
+			{
+				return DynValueToObject(value);
+			}
+
 			StringConversions.StringSubtype stringSubType = StringConversions.GetStringSubtype(desiredType);
 			string str = null;
 

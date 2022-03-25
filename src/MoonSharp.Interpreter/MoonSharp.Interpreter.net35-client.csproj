@@ -187,6 +187,7 @@
     <Compile Include="Interop\StandardDescriptors\ProxyUserDataDescriptor.cs" />
     <Compile Include="Interop\StandardDescriptors\MemberDescriptors\ObjectCallbackMemberDescriptor.cs" />
     <Compile Include="Interop\StandardDescriptors\MemberDescriptors\FunctionMemberDescriptorBase.cs" />
+    <Compile Include="Interop\StandardDescriptors\ReflectionMemberDescriptors\GenericMethodMemberDescriptor.cs" />
     <Compile Include="Interop\StandardDescriptors\StandardEnumUserDataDescriptor.cs" />
     <Compile Include="Interop\StandardDescriptors\MemberDescriptors\DynValueMemberDescriptor.cs" />
     <Compile Include="Interop\StandardDescriptors\ReflectionMemberDescriptors\EventMemberDescriptor.cs" />
