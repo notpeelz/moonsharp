@@ -248,6 +248,9 @@ namespace MoonSharp.Interpreter.Interop.Converters
 			if (desiredType == typeof(object))
 				return WEIGHT_EXACT_MATCH;
 
+			if (desiredType.IsGenericParameter)
+				return WEIGHT_EXACT_MATCH;
+
 			StringConversions.StringSubtype stringSubType = StringConversions.GetStringSubtype(desiredType);
 			
 			Type nt = Nullable.GetUnderlyingType(desiredType);

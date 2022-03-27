@@ -178,47 +178,27 @@ namespace MoonSharp.Interpreter.Interop
 		{
 			this.CheckAccess(MemberDescriptorAccess.CanExecute, obj);
 
-			//if (AccessMode == InteropAccessMode.LazyOptimized &&
-			//	m_OptimizedFunc == null && m_OptimizedAction == null)
-			//	((IOptimizableDescriptor)this).Optimize();
-
 			List<int> outParams = null;
 			object[] pars = base.BuildArgumentList(script, obj, context, args, out outParams);
 			object retv = null;
 
-			if (m_OptimizedFunc != null)
+			int amountGenerics = MethodInfo.GetGenericArguments().Length;
+
+			Type[] generics = new Type[amountGenerics];
+
+			for (var i = 0; i < amountGenerics; i++)
 			{
-				retv = m_OptimizedFunc(obj, pars);
-			}
-			else if (m_OptimizedAction != null)
-			{
-				m_OptimizedAction(obj, pars);
-				retv = DynValue.Void;
-			}
-			else if (m_IsAction)
-			{
-				MethodInfo.Invoke(obj, pars);
-				retv = DynValue.Void;
-			}
-			else
-			{
-				if (IsConstructor)
-					retv = ((ConstructorInfo)MethodInfo).Invoke(pars);
-				else
+				if (pars[i] == null)
 				{
-					int amountGenerics = MethodInfo.GetGenericArguments().Length;
-
-					Type[] generics = new Type[amountGenerics];
-
-					for (var i = 0; i < amountGenerics; i++)
-					{
-						generics[i] = pars[i].GetType();
-					}
-
-					MethodInfo genericMethod = ((MethodInfo)MethodInfo).MakeGenericMethod(generics);
-					retv = genericMethod.Invoke(obj, pars);
+					throw new ScriptRuntimeException("Tried to call a generic method without a generic argument.");
 				}
+
+				generics[i] = pars[i].GetType();
 			}
+
+			MethodInfo genericMethod = ((MethodInfo)MethodInfo).MakeGenericMethod(generics);
+			retv = genericMethod.Invoke(obj, pars);
+
 
 			return BuildReturnValue(script, outParams, pars, retv);
 		}
