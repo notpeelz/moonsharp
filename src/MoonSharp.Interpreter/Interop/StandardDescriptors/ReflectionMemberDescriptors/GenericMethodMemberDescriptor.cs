@@ -206,8 +206,6 @@ namespace MoonSharp.Interpreter.Interop
 			Type[] generics = new Type[amountGenerics];
 			object[] parameters = new object[pars.Length - amountGenerics];
 
-			Console.WriteLine(pars.Length);
-
 			for (var i = 0; i < amountGenerics; i++)
 			{
 				if (pars[i] == null)
