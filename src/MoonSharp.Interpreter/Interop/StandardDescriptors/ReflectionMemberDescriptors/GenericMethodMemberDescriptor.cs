@@ -8,6 +8,7 @@ using System.Threading;
 using MoonSharp.Interpreter.Compatibility;
 using MoonSharp.Interpreter.Diagnostics;
 using MoonSharp.Interpreter.Interop.BasicDescriptors;
+using MoonSharp.Interpreter.Interop.Converters;
 
 namespace MoonSharp.Interpreter.Interop
 {
@@ -71,7 +72,25 @@ namespace MoonSharp.Interpreter.Interop
 			}
 			else
 			{
-				parameters = reflectionParams.Select(pi => new ParameterDescriptor(pi)).ToArray();
+				if (IsConstructor)
+				{
+					parameters = reflectionParams.Select(pi => new ParameterDescriptor(pi)).ToArray();
+				}
+				else
+				{
+					int genericCount = ((MethodInfo)MethodInfo).GetGenericArguments().Length;
+					parameters = new ParameterDescriptor[reflectionParams.Length + genericCount];
+
+					for (int i = 0; i < genericCount; i++)
+					{
+						parameters[i] = new ParameterDescriptor("generic" + i, typeof(object));
+					}
+
+					for (int i = genericCount; i < parameters.Length; i++)
+					{
+						parameters[i] = new ParameterDescriptor(reflectionParams[i - genericCount]);
+					}
+				}
 			}
 
 
@@ -179,12 +198,15 @@ namespace MoonSharp.Interpreter.Interop
 			this.CheckAccess(MemberDescriptorAccess.CanExecute, obj);
 
 			List<int> outParams = null;
-			object[] pars = base.BuildArgumentList(script, obj, context, args, out outParams);
+			object[] pars = BuildArgumentList(script, obj, context, args, out outParams);
 			object retv = null;
 
 			int amountGenerics = MethodInfo.GetGenericArguments().Length;
 
 			Type[] generics = new Type[amountGenerics];
+			object[] parameters = new object[pars.Length - amountGenerics];
+
+			Console.WriteLine(pars.Length);
 
 			for (var i = 0; i < amountGenerics; i++)
 			{
@@ -193,16 +215,137 @@ namespace MoonSharp.Interpreter.Interop
 					throw new ScriptRuntimeException("Tried to call a generic method without a generic argument.");
 				}
 
-				generics[i] = pars[i].GetType();
+				if (pars[i] is Type type)
+				{
+					generics[i] = type;
+				}
+				else
+				{
+					generics[i] = pars[i].GetType();
+				}
+			}
+
+			for (var i = 0; i < parameters.Length; i++)
+			{
+				parameters[i] = pars[i + amountGenerics];
 			}
 
 			MethodInfo genericMethod = ((MethodInfo)MethodInfo).MakeGenericMethod(generics);
-			retv = genericMethod.Invoke(obj, pars);
+			retv = genericMethod.Invoke(obj, parameters);
 
 
 			return BuildReturnValue(script, outParams, pars, retv);
 		}
 
+
+		/// <summary>
+		/// Builds the argument list.
+		/// </summary>
+		/// <param name="script">The script.</param>
+		/// <param name="obj">The object.</param>
+		/// <param name="context">The context.</param>
+		/// <param name="args">The arguments.</param>
+		/// <param name="outParams">Output: A list containing the indices of all "out" parameters, or null if no out parameters are specified.</param>
+		/// <returns>The arguments, appropriately converted.</returns>
+		protected override object[] BuildArgumentList(Script script, object obj, ScriptExecutionContext context, CallbackArguments args,
+			out List<int> outParams)
+		{
+			ParameterDescriptor[] parameters = Parameters;
+
+			object[] pars = new object[parameters.Length];
+
+			int j = args.IsMethodCall ? 1 : 0;
+
+			outParams = null;
+
+			for (int i = 0; i < args.Count; i++)
+			{
+				// keep track of out and ref params
+				if (parameters[i].Type.IsByRef)
+				{
+					if (outParams == null) outParams = new List<int>();
+					outParams.Add(i);
+				}
+
+				// if an ext method, we have an obj -> fill the first param
+				if (ExtensionMethodType != null && obj != null && i == 0)
+				{
+					pars[i] = obj;
+					continue;
+				}
+				// else, fill types with a supported type
+				else if (parameters[i].Type == typeof(Script))
+				{
+					pars[i] = script;
+				}
+				else if (parameters[i].Type == typeof(ScriptExecutionContext))
+				{
+					pars[i] = context;
+				}
+				else if (parameters[i].Type == typeof(CallbackArguments))
+				{
+					pars[i] = args.SkipMethodCall();
+				}
+				// else, ignore out params
+				else if (parameters[i].IsOut)
+				{
+					pars[i] = null;
+				}
+				else if (i == parameters.Length - 1 && VarArgsArrayType != null)
+				{
+					List<DynValue> extraArgs = new List<DynValue>();
+
+					while (true)
+					{
+						DynValue arg = args.RawGet(j, false);
+						j += 1;
+						if (arg != null)
+							extraArgs.Add(arg);
+						else
+							break;
+					}
+
+					// here we have to worry we already have an array.. damn. We only support this for userdata.
+					// remains to be analyzed what's the correct behavior here. For example, let's take a params object[]..
+					// given a single table parameter, should it use it as an array or as an object itself ?
+					if (extraArgs.Count == 1)
+					{
+						DynValue arg = extraArgs[0];
+
+						if (arg.Type == DataType.UserData && arg.UserData.Object != null)
+						{
+							if (Framework.Do.IsAssignableFrom(VarArgsArrayType, arg.UserData.Object.GetType()))
+							{
+								pars[i] = arg.UserData.Object;
+								continue;
+							}
+						}
+					}
+
+					// ok let's create an array, and loop
+					Array vararg = Array.CreateInstance(VarArgsElementType, extraArgs.Count);
+
+					for (int ii = 0; ii < extraArgs.Count; ii++)
+					{
+						vararg.SetValue(ScriptToClrConversions.DynValueToObjectOfType(extraArgs[ii], VarArgsElementType,
+						null, false), ii);
+					}
+
+					pars[i] = vararg;
+
+				}
+				// else, convert it
+				else
+				{
+					var arg = args.RawGet(j, false) ?? DynValue.Void;
+					pars[i] = ScriptToClrConversions.DynValueToObjectOfType(arg, parameters[i].Type,
+						parameters[i].DefaultValue, parameters[i].HasDefaultValue);
+					j += 1;
+				}
+			}
+
+			return pars;
+		}
 
 		/// <summary>
 		/// Prepares the descriptor for hard-wiring.
