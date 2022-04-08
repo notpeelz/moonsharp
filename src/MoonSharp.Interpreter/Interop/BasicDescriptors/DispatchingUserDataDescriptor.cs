@@ -186,8 +186,8 @@ namespace MoonSharp.Interpreter.Interop.BasicDescriptors
 
 					if (overloads != null)
 						overloads.AddOverload(odesc);
-					else
-						throw new ArgumentException(string.Format("Multiple members named {0} are being added to type {1} and one or more of these members do not support overloads.", name, this.Type.FullName));
+					//else
+						//throw new ArgumentException(string.Format("Multiple members named {0} are being added to type {1} and one or more of these members do not support overloads.", name, this.Type.FullName));
 				}
 				else
 				{
@@ -198,7 +198,7 @@ namespace MoonSharp.Interpreter.Interop.BasicDescriptors
 			{
 				if (members.ContainsKey(name))
 				{
-					throw new ArgumentException(string.Format("Multiple members named {0} are being added to type {1} and one or more of these members do not support overloads.", name, this.Type.FullName));
+					//throw new ArgumentException(string.Format("Multiple members named {0} are being added to type {1} and one or more of these members do not support overloads.", name, this.Type.FullName));
 				}
 				else
 				{
