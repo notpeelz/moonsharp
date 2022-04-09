@@ -84,6 +84,16 @@ namespace MoonSharp.Interpreter.Interop.Converters
 			}
 			catch
 			{
+				if (baseType.BaseType != null)
+                {
+					return HasImplicitConversion(baseType.BaseType, targetType);
+				}
+
+				if (targetType.BaseType != null)
+				{
+					return HasImplicitConversion(baseType, targetType.BaseType);
+				}
+
 				return null;
 			}
 		}
@@ -153,6 +163,16 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						return value.Boolean;
 					if (stringSubType != StringConversions.StringSubtype.None)
 						str = value.Boolean.ToString();
+
+					{
+						var conv = HasImplicitConversion(typeof(bool), desiredType);
+
+						if (conv != null)
+						{
+							return conv.Invoke(null, new object[] { value.Boolean });
+						}
+					}
+
 					break;
 				case DataType.Number:
 					if (Framework.Do.IsEnum(desiredType))
@@ -160,19 +180,41 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						Type underType = Enum.GetUnderlyingType(desiredType);
 						return NumericConversions.DoubleToType(underType, value.Number);
 					}
-                    			if (NumericConversions.NumericTypes.Contains(desiredType))
-                    			{
-                        			object d = NumericConversions.DoubleToType(desiredType, value.Number);
-                        			if (d.GetType() == desiredType)
-                            				return d;
-                        			break;
-                    			}
+
+                    if (NumericConversions.NumericTypes.Contains(desiredType))
+                    {
+                        object d = NumericConversions.DoubleToType(desiredType, value.Number);
+                        if (d.GetType() == desiredType)
+                            	return d;
+                        break;
+                    }
+
 					if (stringSubType != StringConversions.StringSubtype.None)
 						str = value.Number.ToString(CultureInfo.InvariantCulture);
+
+					{
+						var conv = HasImplicitConversion(typeof(double), desiredType);
+
+						if (conv != null)
+						{
+							return conv.Invoke(null, new object[] { value.Number });
+						}
+					}
+
 					break;
 				case DataType.String:
 					if (stringSubType != StringConversions.StringSubtype.None)
 						str = value.String;
+
+					{
+						var conv = HasImplicitConversion(typeof(string), desiredType);
+
+						if (conv != null)
+						{
+							return conv.Invoke(null, new[] { value.String });
+						}
+					}
+
 					break;
 				case DataType.Function:
 					if (desiredType == typeof(Closure)) return value.Function;
@@ -191,11 +233,13 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						if (udDesc.IsTypeCompatible(desiredType, udObj))
 							return udObj;
 
-						var conv = HasImplicitConversion(udObj.GetType(), desiredType);
-
-						if (conv != null)
 						{
-							return conv.Invoke(null, new[] { udObj });
+							var conv = HasImplicitConversion(udObj.GetType(), desiredType);
+
+							if (conv != null)
+							{
+								return conv.Invoke(null, new[] { udObj });
+							}
 						}
 
 						if (stringSubType != StringConversions.StringSubtype.None)
@@ -283,6 +327,9 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						return WEIGHT_EXACT_MATCH;
 					if (stringSubType != StringConversions.StringSubtype.None)
 						return WEIGHT_BOOL_TO_STRING;
+
+					if (HasImplicitConversion(typeof(bool), desiredType) != null)
+						return WEIGHT_EXACT_MATCH;
 					break;
 				case DataType.Number:
 					if (Framework.Do.IsEnum(desiredType))
@@ -293,6 +340,9 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						return GetNumericTypeWeight(desiredType);
 					if (stringSubType != StringConversions.StringSubtype.None)
 						return WEIGHT_NUMBER_TO_STRING;
+
+					if (HasImplicitConversion(typeof(double), desiredType) != null)
+						return WEIGHT_EXACT_MATCH;
 					break;
 				case DataType.String:
 					if (stringSubType == StringConversions.StringSubtype.String)
@@ -301,6 +351,10 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						return WEIGHT_STRING_TO_STRINGBUILDER;
 					else if (stringSubType == StringConversions.StringSubtype.Char)
 						return WEIGHT_STRING_TO_CHAR;
+
+					if (HasImplicitConversion(typeof(string), desiredType) != null)
+						return WEIGHT_EXACT_MATCH;
+
 					break;
 				case DataType.Function:
 					if (desiredType == typeof(Closure)) return WEIGHT_EXACT_MATCH;
