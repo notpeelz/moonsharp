@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using MoonSharp.Interpreter.Compatibility;
 
@@ -77,21 +78,14 @@ namespace MoonSharp.Interpreter.Interop.Converters
 
 		public static MethodInfo HasImplicitConversion(Type baseType, Type targetType)
 		{
-			MethodInfo found = null;
-			baseType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-				.Where(mi => mi.Name == "op_Implicit" && mi.ReturnType == targetType)
-				.Any(mi => {
-					ParameterInfo pi = mi.GetParameters().FirstOrDefault();
-					if (pi != null && pi.ParameterType == baseType)
-					{
-						found = mi;
-						return true;
-					}
-					else
-						return false;
-				});
-
-			return found;
+			try
+			{
+				return Expression.Convert(Expression.Parameter(baseType, null), targetType).Method;
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 		/// <summary>
