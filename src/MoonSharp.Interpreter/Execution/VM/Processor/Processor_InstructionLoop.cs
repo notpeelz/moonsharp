@@ -307,7 +307,16 @@ namespace MoonSharp.Interpreter.Execution.VM
 
 				ex.Rethrow();
 				throw;
-			}
+            }
+            catch (Exception ex)
+            {
+				NetRuntimeException exception = new NetRuntimeException(ex);
+
+				FillDebugData(exception, instructionPtr);
+
+
+				throw exception;
+            }
 
 		return_to_native_code:
 			return m_ValueStack.Pop();
