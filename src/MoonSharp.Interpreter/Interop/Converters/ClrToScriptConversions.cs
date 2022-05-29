@@ -161,8 +161,8 @@ namespace MoonSharp.Interpreter.Interop.Converters
 
 				for (int i = 0; i < args; i++)
 				{
-					var prop = objType.GetProperty("Item" + (i + 1));
-					var val = prop.GetValue(obj, null);
+					var field = objType.GetField("Item" + (i + 1));
+					var val = field.GetValue(obj);
 					vals[i] = DynValue.FromObject(script, val);
 				}
 
