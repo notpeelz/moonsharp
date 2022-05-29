@@ -271,6 +271,9 @@
     <Compile Include="..\..\Interop\StandardDescriptors\MemberDescriptors\FunctionMemberDescriptorBase.cs">
       <Link>FunctionMemberDescriptorBase.cs</Link>
     </Compile>
+    <Compile Include="..\..\Interop\StandardDescriptors\ReflectionMemberDescriptors\GenericMethodMemberDescriptor.cs">
+      <Link>GenericMethodMemberDescriptor.cs</Link>
+    </Compile>
     <Compile Include="..\..\Interop\StandardDescriptors\StandardEnumUserDataDescriptor.cs">
       <Link>StandardEnumUserDataDescriptor.cs</Link>
     </Compile>
@@ -817,7 +820,6 @@
     <Compile Include="..\..\Tree\Statements\WhileStatement.cs">
       <Link>WhileStatement.cs</Link>
     </Compile>
-    <Compile Include="GenericMethodMemberDescriptor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
