@@ -157,6 +157,9 @@
     <Compile Include="..\..\Debugging\DebugService.cs">
       <Link>DebugService.cs</Link>
     </Compile>
+    <Compile Include="..\..\Errors\NetRuntimeException.cs">
+      <Link>NetRuntimeException.cs</Link>
+    </Compile>
     <Compile Include="..\..\Execution\VM\OpCodeMetadataType.cs">
       <Link>OpCodeMetadataType.cs</Link>
     </Compile>
@@ -815,7 +818,6 @@
       <Link>WhileStatement.cs</Link>
     </Compile>
     <Compile Include="GenericMethodMemberDescriptor.cs" />
-    <Compile Include="NetRuntimeException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
