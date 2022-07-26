@@ -24,13 +24,13 @@ echo
 echo Copying files...
 
 echo ... Unity - interpreter
-rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' /git/my/moonsharp/src/MoonSharp.Interpreter/ ./Unity/MoonSharp/Assets/Plugins/MoonSharp/Interpreter/
+rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' "$PWD/MoonSharp.Interpreter/" ./Unity/MoonSharp/Assets/Plugins/MoonSharp/Interpreter/
 
 echo ... Unity - vscode debugger...
-rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' /git/my/moonsharp/src/MoonSharp.VsCodeDebugger/ ./Unity/MoonSharp/Assets/Plugins/MoonSharp/Debugger/
+rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' "$PWD/MoonSharp.VsCodeDebugger/" ./Unity/MoonSharp/Assets/Plugins/MoonSharp/Debugger/
 
 echo ... Unity - unit tests...
-rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' /git/my/moonsharp/src/MoonSharp.Interpreter.Tests/ ./Unity/MoonSharp/Assets/Tests
+rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' "$PWD/MoonSharp.Interpreter.Tests/" ./Unity/MoonSharp/Assets/Tests
 
 echo ... Unity - cleaning cruft...
 rm -R ./Unity/MoonSharp/Assets/Plugins/MoonSharp/Interpreter/_Projects
@@ -38,10 +38,10 @@ rm -R ./Unity/MoonSharp/Assets/Plugins/MoonSharp/Debugger/_Projects
 
 
 echo ... .NET Core - interpreter
-rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' /git/my/moonsharp/src/MoonSharp.Interpreter/ ./MoonSharp.Interpreter/_Projects/MoonSharp.Interpreter.netcore/src/
+rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' "$PWD/MoonSharp.Interpreter/" ./MoonSharp.Interpreter/_Projects/MoonSharp.Interpreter.netcore/src/
 
 echo ... .NET Core - vscode debugger...
-rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' /git/my/moonsharp/src/MoonSharp.VsCodeDebugger/ ./MoonSharp.VsCodeDebugger/_Projects/MoonSharp.VsCodeDebugger.netcore/src
+rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' "$PWD/MoonSharp.VsCodeDebugger/" ./MoonSharp.VsCodeDebugger/_Projects/MoonSharp.VsCodeDebugger.netcore/src
 
 echo ... .NET Core - unit tests...
-rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' /git/my/moonsharp/src/MoonSharp.Interpreter.Tests/ ./TestRunners/DotNetCoreTestRunner/src
+rsync -a --prune-empty-dirs --exclude 'AssemblyInfo.cs' --include '*/' --include '*.cs' --exclude '*' "$PWD/MoonSharp.Interpreter.Tests/" ./TestRunners/DotNetCoreTestRunner/src
