@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using MoonSharp.Interpreter.Interop.RegistrationPolicies;
@@ -143,6 +144,31 @@ namespace MoonSharp.Interpreter.Interop.Converters
 				Table t = TableConversions.ConvertIDictionaryToTable(script, (System.Collections.IDictionary)obj);
 				return DynValue.NewTable(t);
 			}
+
+#if HASDYNAMIC
+			var objType = obj.GetType();
+
+#if PCL
+			var isTuple = objType.IsGenericType && objType.GetInterfaces().Where(f => f.Name == "ITuple").Count() > 0;
+#else
+			var isTuple = objType.IsGenericType && objType.GetInterface("ITuple") != null;
+#endif
+
+			if (isTuple)
+			{
+				var args = objType.GetGenericArguments().Length;
+				var vals = new DynValue[args];
+
+				for (int i = 0; i < args; i++)
+				{
+					var field = objType.GetField("Item" + (i + 1));
+					var val = field.GetValue(obj);
+					vals[i] = DynValue.FromObject(script, val);
+				}
+
+				return DynValue.NewTupleNested(vals);
+			}
+#endif
 
 			var enumerator = EnumerationToDynValue(script, obj);
 			if (enumerator != null) return enumerator;

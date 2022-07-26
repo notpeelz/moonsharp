@@ -52,6 +52,20 @@ namespace MoonSharp.Interpreter
 			DefaultAccessMode = InteropAccessMode.LazyOptimized;
 		}
 
+		
+		
+		/// <summary>
+		/// Gets the meta-table associated with this instance.
+		/// </summary>
+		public Table MetaTable
+		{
+			get { return m_MetaTable; }
+			set { m_MetaTable = value; }
+		}
+		private Table m_MetaTable;
+		
+		
+		
 		/// <summary>
 		/// Registers a type for userdata interop
 		/// </summary>
@@ -185,9 +199,10 @@ namespace MoonSharp.Interpreter
 		/// Additionally, it's a good practice to discard all previous loaded scripts after calling this method.
 		/// </summary>
 		/// <typeparam name="T">The type to be unregistered</typeparam>
-		public static void UnregisterType<T>()
+		/// <param name="deleteHistory">Type removed from registration history</param>
+		public static void UnregisterType<T>(bool deleteHistory = false)
 		{
-			TypeDescriptorRegistry.UnregisterType(typeof(T));
+			TypeDescriptorRegistry.UnregisterType(typeof(T), deleteHistory);
 		}
 
 		/// <summary>
@@ -197,9 +212,10 @@ namespace MoonSharp.Interpreter
 		/// Additionally, it's a good practice to discard all previous loaded scripts after calling this method.
 		/// </summary>
 		/// <param name="t">The The type to be unregistered</param>
-		public static void UnregisterType(Type t)
+		/// <param name="deleteHistory">Type removed from registration history</param>
+		public static void UnregisterType(Type t, bool deleteHistory = false)
 		{
-			TypeDescriptorRegistry.UnregisterType(t);
+			TypeDescriptorRegistry.UnregisterType(t, deleteHistory);
 		}
 
 		/// <summary>

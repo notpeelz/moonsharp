@@ -82,21 +82,50 @@ namespace MoonSharp.Interpreter.Interop
 
 				if (md != null)
 				{
-					if (!MethodMemberDescriptor.CheckMethodIsCompatible(mi, false))
-						continue;
-
-					// transform explicit/implicit conversions to a friendlier name.
-					string name = mi.Name;
-					if (mi.IsSpecialName && (mi.Name == SPECIALNAME_CAST_EXPLICIT || mi.Name == SPECIALNAME_CAST_IMPLICIT))
+					if (MethodMemberDescriptor.CheckMethodIsCompatible(mi, false))
 					{
-						name = mi.ReturnType.GetConversionMethodName();
+
+						// transform explicit/implicit conversions to a friendlier name.
+						string name = mi.Name;
+						if (mi.IsSpecialName && (mi.Name == SPECIALNAME_CAST_EXPLICIT || mi.Name == SPECIALNAME_CAST_IMPLICIT))
+						{
+							name = mi.ReturnType.GetConversionMethodName();
+						}
+
+						AddMember(name, md);
+
+						foreach (string metaname in mi.GetMetaNamesFromAttributes())
+						{
+							AddMetaMember(metaname, md);
+						}
 					}
+				}
+			}
 
-					AddMember(name, md);
+			foreach (MethodInfo mi in Framework.Do.GetMethods(type))
+			{
+				if (membersToIgnore.Contains(mi.Name)) continue;
 
-					foreach (string metaname in mi.GetMetaNamesFromAttributes())
+				GenericMethodMemberDescriptor md = GenericMethodMemberDescriptor.TryCreateIfVisible(mi, this.AccessMode);
+
+				if (md != null)
+				{
+					if (GenericMethodMemberDescriptor.CheckMethodIsCompatible(mi, false))
 					{
-						AddMetaMember(metaname, md);
+
+						// transform explicit/implicit conversions to a friendlier name.
+						string name = mi.Name;
+						if (mi.IsSpecialName && (mi.Name == SPECIALNAME_CAST_EXPLICIT || mi.Name == SPECIALNAME_CAST_IMPLICIT))
+						{
+							name = mi.ReturnType.GetConversionMethodName();
+						}
+
+						AddMember(name, md);
+
+						foreach (string metaname in mi.GetMetaNamesFromAttributes())
+						{
+							AddMetaMember(metaname, md);
+						}
 					}
 				}
 			}
