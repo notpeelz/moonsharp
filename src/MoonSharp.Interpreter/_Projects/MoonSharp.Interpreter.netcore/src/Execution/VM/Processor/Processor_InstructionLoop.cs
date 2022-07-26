@@ -307,7 +307,16 @@ namespace MoonSharp.Interpreter.Execution.VM
 
 				ex.Rethrow();
 				throw;
-			}
+            }
+            catch (Exception ex)
+            {
+				NetRuntimeException exception = new NetRuntimeException(ex);
+
+				FillDebugData(exception, instructionPtr);
+
+
+				throw exception;
+            }
 
 		return_to_native_code:
 			return m_ValueStack.Pop();
@@ -506,6 +515,7 @@ namespace MoonSharp.Interpreter.Execution.VM
 					var = v.Tuple.Length >= 3 ? v.Tuple[2] : DynValue.Nil;
 
 					m_ValueStack.Push(DynValue.NewTuple(f, s, var));
+					return;
 				}
 				else if (f.Type == DataType.Table)
 				{
@@ -514,6 +524,7 @@ namespace MoonSharp.Interpreter.Execution.VM
 					if (callmeta == null || callmeta.IsNil())
 					{
 						m_ValueStack.Push(EnumerableWrapper.ConvertTable(f.Table));
+						return;
 					}
 				}
 			}
@@ -701,9 +712,12 @@ namespace MoonSharp.Interpreter.Execution.VM
 			{
 				//IList<DynValue> args = new Slice<DynValue>(m_ValueStack, m_ValueStack.Count - argsCount, argsCount, false);
 				IList<DynValue> args = CreateArgsListForFunctionCall(argsCount, 0);
-				// we expand tuples before callbacks
+		                // we expand tuples before callbacks
 				// args = DynValue.ExpandArgumentsToList(args);
-				SourceRef sref = GetCurrentSourceRef(instructionPtr);
+
+				// instructionPtr - 1: instructionPtr already points to the next instruction at this moment
+				// but we need the current instruction here
+                		SourceRef sref = GetCurrentSourceRef(instructionPtr - 1);
 
 				m_ExecutionStack.Push(new CallStackItem()
 				{
@@ -733,7 +747,7 @@ namespace MoonSharp.Interpreter.Execution.VM
 					BasePointer = m_ValueStack.Count,
 					ReturnAddress = instructionPtr,
 					Debug_EntryPoint = fn.Function.EntryPointByteCodeLocation,
-					CallingSourceRef = GetCurrentSourceRef(instructionPtr),
+					CallingSourceRef = GetCurrentSourceRef(instructionPtr - 1), // See right above in GetCurrentSourceRef(instructionPtr - 1)
 					ClosureScope = fn.Function.ClosureContext,
 					ErrorHandler = handler,
 					Continuation = continuation,
@@ -1243,13 +1257,18 @@ namespace MoonSharp.Interpreter.Execution.VM
 				else if (obj.Type == DataType.UserData)
 				{
 					UserData ud = obj.UserData;
+					
+					h = GetMetamethodRaw(obj, "__newindex");
 
-					if (!ud.Descriptor.SetIndex(this.GetScript(), ud.Object, originalIdx, value, isNameIndex))
+					if (h == null || h.IsNil())
 					{
-						throw ScriptRuntimeException.UserDataMissingField(ud.Descriptor.Name, idx.String);
-					}
+						if (!ud.Descriptor.SetIndex(this.GetScript(), ud.Object, originalIdx, value, isNameIndex))
+						{
+							throw ScriptRuntimeException.UserDataMissingField(ud.Descriptor.Name, idx.String);
+						}
 
-					return instructionPtr;
+						return instructionPtr;
+					}
 				}
 				else
 				{
@@ -1330,11 +1349,17 @@ namespace MoonSharp.Interpreter.Execution.VM
 
 					if (v == null)
 					{
-						throw ScriptRuntimeException.UserDataMissingField(ud.Descriptor.Name, idx.String);
+						h = GetMetamethodRaw(obj, "__index");
+						if (h == null || h.IsNil())
+						{
+							throw ScriptRuntimeException.UserDataMissingField(ud.Descriptor.Name, idx.String);
+						}
 					}
-
-					m_ValueStack.Push(v.AsReadOnly());
-					return instructionPtr;
+					else
+					{
+						m_ValueStack.Push(v.AsReadOnly());
+						return instructionPtr;
+					}
 				}
 				else
 				{

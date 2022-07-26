@@ -11,128 +11,129 @@ namespace MoonSharp.Interpreter
 #if !(PCL || ((!UNITY_EDITOR) && (ENABLE_DOTNET)) || NETFX_CORE)
 	[Serializable]
 #endif
-	public class ScriptRuntimeException : InterpreterException
+	public class NetRuntimeException : InterpreterException
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ScriptRuntimeException"/> class.
+		/// Initializes a new instance of the <see cref="NetRuntimeException"/> class.
 		/// </summary>
 		/// <param name="ex">The ex.</param>
-		public ScriptRuntimeException(Exception ex)
+		public NetRuntimeException(Exception ex)
 			: base(ex)
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ScriptRuntimeException"/> class.
+		/// Initializes a new instance of the <see cref="NetRuntimeException"/> class.
 		/// </summary>
 		/// <param name="ex">The ex.</param>
-		public ScriptRuntimeException(ScriptRuntimeException ex)
+		public NetRuntimeException(NetRuntimeException ex)
 			: base(ex, ex.DecoratedMessage)
 		{
 			this.DecoratedMessage = Message;
 			this.DoNotDecorateMessage = true;
 		}
 
+
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ScriptRuntimeException"/> class.
+		/// Initializes a new instance of the <see cref="NetRuntimeException"/> class.
 		/// </summary>
 		/// <param name="message">The message that describes the error.</param>
-		public ScriptRuntimeException(string message)
+		public NetRuntimeException(string message)
 			: base(message)
 		{
 
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ScriptRuntimeException"/> class.
+		/// Initializes a new instance of the <see cref="NetRuntimeException"/> class.
 		/// </summary>
 		/// <param name="format">The format.</param>
 		/// <param name="args">The arguments.</param>
-		public ScriptRuntimeException(string format, params object[] args)
+		public NetRuntimeException(string format, params object[] args)
 			: base(format, args)
 		{
 
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an arithmetic operation was attempted on non-numbers
 		/// </summary>
 		/// <param name="l">The left operand.</param>
 		/// <param name="r">The right operand (or null).</param>
 		/// <returns>The exception to be raised.</returns>
 		/// <exception cref="InternalErrorException">If both are numbers</exception>
-		public static ScriptRuntimeException ArithmeticOnNonNumber(DynValue l, DynValue r = null)
+		public static NetRuntimeException ArithmeticOnNonNumber(DynValue l, DynValue r = null)
 		{
 			if (l.Type != DataType.Number && l.Type != DataType.String)
-				return new ScriptRuntimeException("attempt to perform arithmetic on a {0} value", l.Type.ToLuaTypeString());
+				return new NetRuntimeException("attempt to perform arithmetic on a {0} value", l.Type.ToLuaTypeString());
 			else if (r != null && r.Type != DataType.Number && r.Type != DataType.String)
-				return new ScriptRuntimeException("attempt to perform arithmetic on a {0} value", r.Type.ToLuaTypeString());
+				return new NetRuntimeException("attempt to perform arithmetic on a {0} value", r.Type.ToLuaTypeString());
 			else if (l.Type == DataType.String || (r != null && r.Type == DataType.String))
-				return new ScriptRuntimeException("attempt to perform arithmetic on a string value");
+				return new NetRuntimeException("attempt to perform arithmetic on a string value");
 			else
 				throw new InternalErrorException("ArithmeticOnNonNumber - both are numbers");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a concat operation was attempted on non-strings
 		/// </summary>
 		/// <param name="l">The left operand.</param>
 		/// <param name="r">The right operand.</param>
 		/// <returns>The exception to be raised.</returns>
 		/// <exception cref="InternalErrorException">If both are numbers or strings</exception>
-		public static ScriptRuntimeException ConcatOnNonString(DynValue l, DynValue r)
+		public static NetRuntimeException ConcatOnNonString(DynValue l, DynValue r)
 		{
 			if (l.Type != DataType.Number && l.Type != DataType.String)
-				return new ScriptRuntimeException("attempt to concatenate a {0} value", l.Type.ToLuaTypeString());
+				return new NetRuntimeException("attempt to concatenate a {0} value", l.Type.ToLuaTypeString());
 			else if (r != null && r.Type != DataType.Number && r.Type != DataType.String)
-				return new ScriptRuntimeException("attempt to concatenate a {0} value", r.Type.ToLuaTypeString());
+				return new NetRuntimeException("attempt to concatenate a {0} value", r.Type.ToLuaTypeString());
 			else
 				throw new InternalErrorException("ConcatOnNonString - both are numbers/strings");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a len operator was applied on an invalid operand
 		/// </summary>
 		/// <param name="r">The operand.</param>
 		/// <returns>The exception to be raised.</returns>
-		public static ScriptRuntimeException LenOnInvalidType(DynValue r)
+		public static NetRuntimeException LenOnInvalidType(DynValue r)
 		{
-			return new ScriptRuntimeException("attempt to get length of a {0} value", r.Type.ToLuaTypeString());
+			return new NetRuntimeException("attempt to get length of a {0} value", r.Type.ToLuaTypeString());
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a comparison operator was applied on an invalid combination of operand types
 		/// </summary>
 		/// <param name="l">The left operand.</param>
 		/// <param name="r">The right operand.</param>
 		/// <returns>The exception to be raised.</returns>
-		public static ScriptRuntimeException CompareInvalidType(DynValue l, DynValue r)
+		public static NetRuntimeException CompareInvalidType(DynValue l, DynValue r)
 		{
 			if (l.Type.ToLuaTypeString() == r.Type.ToLuaTypeString())
-				return new ScriptRuntimeException("attempt to compare two {0} values", l.Type.ToLuaTypeString());
+				return new NetRuntimeException("attempt to compare two {0} values", l.Type.ToLuaTypeString());
 			else
-				return new ScriptRuntimeException("attempt to compare {0} with {1}", l.Type.ToLuaTypeString(), r.Type.ToLuaTypeString());
+				return new NetRuntimeException("attempt to compare {0} with {1}", l.Type.ToLuaTypeString(), r.Type.ToLuaTypeString());
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a function was called with a bad argument
 		/// </summary>
 		/// <param name="argNum">The argument number (0-based).</param>
 		/// <param name="funcName">Name of the function generating this error.</param>
 		/// <param name="message">The error message.</param>
 		/// <returns>The exception to be raised.</returns>
-		public static ScriptRuntimeException BadArgument(int argNum, string funcName, string message)
+		public static NetRuntimeException BadArgument(int argNum, string funcName, string message)
 		{
-			return new ScriptRuntimeException("bad argument #{0} to '{1}' ({2})", argNum + 1, funcName, message);
+			return new NetRuntimeException("bad argument #{0} to '{1}' ({2})", argNum + 1, funcName, message);
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a function was called with a bad userdata argument
 		/// </summary>
 		/// <param name="argNum">The argument number (0-based).</param>
@@ -143,10 +144,10 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException BadArgumentUserData(int argNum, string funcName, Type expected, object got, bool allowNil)
+		public static NetRuntimeException BadArgumentUserData(int argNum, string funcName, Type expected, object got, bool allowNil)
 		{
-			return new ScriptRuntimeException("bad argument #{0} to '{1}' (userdata<{2}>{3} expected, got {4})", 
-				argNum + 1, 
+			return new NetRuntimeException("bad argument #{0} to '{1}' (userdata<{2}>{3} expected, got {4})",
+				argNum + 1,
 				funcName,
 				expected.Name,
 				allowNil ? "nil or " : "",
@@ -155,7 +156,7 @@ namespace MoonSharp.Interpreter
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a function was called with a bad argument
 		/// </summary>
 		/// <param name="argNum">The argument number (0-based).</param>
@@ -166,13 +167,13 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException BadArgument(int argNum, string funcName, DataType expected, DataType got, bool allowNil)
+		public static NetRuntimeException BadArgument(int argNum, string funcName, DataType expected, DataType got, bool allowNil)
 		{
 			return BadArgument(argNum, funcName, expected.ToErrorTypeString(), got.ToErrorTypeString(), allowNil);
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a function was called with a bad argument
 		/// </summary>
 		/// <param name="argNum">The argument number (0-based).</param>
@@ -183,14 +184,14 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException BadArgument(int argNum, string funcName, string expected, string got, bool allowNil)
+		public static NetRuntimeException BadArgument(int argNum, string funcName, string expected, string got, bool allowNil)
 		{
-			return new ScriptRuntimeException("bad argument #{0} to '{1}' ({2}{3} expected, got {4})",
+			return new NetRuntimeException("bad argument #{0} to '{1}' ({2}{3} expected, got {4})",
 				argNum + 1, funcName, allowNil ? "nil or " : "", expected, got);
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a function was called with no value when a value was required.
 		/// 
 		/// This function creates a message like "bad argument #xxx to 'yyy' (zzz expected, got no value)"
@@ -202,14 +203,14 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException BadArgumentNoValue(int argNum, string funcName, DataType expected)
+		public static NetRuntimeException BadArgumentNoValue(int argNum, string funcName, DataType expected)
 		{
-			return new ScriptRuntimeException("bad argument #{0} to '{1}' ({2} expected, got no value)",
+			return new NetRuntimeException("bad argument #{0} to '{1}' ({2} expected, got no value)",
 				argNum + 1, funcName, expected.ToErrorTypeString());
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an out of range index was specified
 		/// </summary>
 		/// <param name="argNum">The argument number (0-based).</param>
@@ -217,13 +218,13 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException BadArgumentIndexOutOfRange(string funcName, int argNum)
+		public static NetRuntimeException BadArgumentIndexOutOfRange(string funcName, int argNum)
 		{
-			return new ScriptRuntimeException("bad argument #{0} to '{1}' (index out of range)", argNum + 1, funcName);
+			return new NetRuntimeException("bad argument #{0} to '{1}' (index out of range)", argNum + 1, funcName);
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a function was called with a negative number when a positive one was expected.
 		/// </summary>
 		/// <param name="argNum">The argument number (0-based).</param>
@@ -231,14 +232,14 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException BadArgumentNoNegativeNumbers(int argNum, string funcName)
+		public static NetRuntimeException BadArgumentNoNegativeNumbers(int argNum, string funcName)
 		{
-			return new ScriptRuntimeException("bad argument #{0} to '{1}' (not a non-negative number in proper range)",
+			return new NetRuntimeException("bad argument #{0} to '{1}' (not a non-negative number in proper range)",
 				argNum + 1, funcName);
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a function was called with no value when a value was required.
 		/// This function creates a message like "bad argument #xxx to 'yyy' (value expected)"
 		/// while <see cref="BadArgumentNoValue" /> creates a message like "bad argument #xxx to 'yyy' (zzz expected, got no value)"
@@ -248,87 +249,88 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException BadArgumentValueExpected(int argNum, string funcName)
+		public static NetRuntimeException BadArgumentValueExpected(int argNum, string funcName)
 		{
-			return new ScriptRuntimeException("bad argument #{0} to '{1}' (value expected)",
+			return new NetRuntimeException("bad argument #{0} to '{1}' (value expected)",
 				argNum + 1, funcName);
 		}
 
+
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an invalid attempt to index the specified object was made
 		/// </summary>
 		/// <param name="obj">The object.</param>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException IndexType(DynValue obj)
+		public static NetRuntimeException IndexType(DynValue obj)
 		{
-			return new ScriptRuntimeException("attempt to index a {0} value", obj.Type.ToLuaTypeString());
+			return new NetRuntimeException("attempt to index a {0} value", obj.Type.ToLuaTypeString());
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a loop was detected when performing __index over metatables.
 		/// </summary>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException LoopInIndex()
+		public static NetRuntimeException LoopInIndex()
 		{
-			return new ScriptRuntimeException("loop in gettable");
+			return new NetRuntimeException("loop in gettable");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a loop was detected when performing __newindex over metatables.
 		/// </summary>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException LoopInNewIndex()
+		public static NetRuntimeException LoopInNewIndex()
 		{
-			return new ScriptRuntimeException("loop in settable");
+			return new NetRuntimeException("loop in settable");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a loop was detected when performing __call over metatables.
 		/// </summary>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException LoopInCall()
+		public static NetRuntimeException LoopInCall()
 		{
-			return new ScriptRuntimeException("loop in call");
+			return new NetRuntimeException("loop in call");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a table indexing operation used nil as the key.
 		/// </summary>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException TableIndexIsNil()
+		public static NetRuntimeException TableIndexIsNil()
 		{
-			return new ScriptRuntimeException("table index is nil");
+			return new NetRuntimeException("table index is nil");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a table indexing operation used a NaN as the key.
 		/// </summary>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException TableIndexIsNaN()
+		public static NetRuntimeException TableIndexIsNaN()
 		{
-			return new ScriptRuntimeException("table index is NaN");
+			return new NetRuntimeException("table index is NaN");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a conversion to number failed.
 		/// </summary>
 		/// <param name="stage">
@@ -341,49 +343,49 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException ConvertToNumberFailed(int stage)
+		public static NetRuntimeException ConvertToNumberFailed(int stage)
 		{
 			switch (stage)
 			{
 				case 1:
-					return new ScriptRuntimeException("'for' initial value must be a number");
+					return new NetRuntimeException("'for' initial value must be a number");
 				case 2:
-					return new ScriptRuntimeException("'for' step must be a number");
+					return new NetRuntimeException("'for' step must be a number");
 				case 3:
-					return new ScriptRuntimeException("'for' limit must be a number");
+					return new NetRuntimeException("'for' limit must be a number");
 				default:
-					return new ScriptRuntimeException("value must be a number");
+					return new NetRuntimeException("value must be a number");
 			}
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a conversion of a CLR type to a Lua type has failed.
 		/// </summary>
 		/// <param name="obj">The object which could not be converted.</param>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException ConvertObjectFailed(object obj)
+		public static NetRuntimeException ConvertObjectFailed(object obj)
 		{
-			return new ScriptRuntimeException("cannot convert clr type {0}", obj.GetType());
+			return new NetRuntimeException("cannot convert clr type {0}", obj.GetType());
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a conversion of a Lua type to a CLR type has failed.
 		/// </summary>
 		/// <param name="t">The Lua type.</param>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException ConvertObjectFailed(DataType t)
+		public static NetRuntimeException ConvertObjectFailed(DataType t)
 		{
-			return new ScriptRuntimeException("cannot convert a {0} to a clr type", t.ToString().ToLowerInvariant());
+			return new NetRuntimeException("cannot convert a {0} to a clr type", t.ToString().ToLowerInvariant());
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a constrained conversion of a Lua type to a CLR type has failed.
 		/// </summary>
 		/// <param name="t">The Lua type.</param>
@@ -391,13 +393,13 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException ConvertObjectFailed(DataType t, Type t2)
+		public static NetRuntimeException ConvertObjectFailed(DataType t, Type t2)
 		{
-			return new ScriptRuntimeException("cannot convert a {0} to a clr type {1}", t.ToString().ToLowerInvariant(), t2.FullName);
+			return new NetRuntimeException("cannot convert a {0} to a clr type {1}", t.ToString().ToLowerInvariant(), t2.FullName);
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// a userdata of a specific CLR type was expected and a non-userdata type was passed.
 		/// </summary>
 		/// <param name="t">The Lua type.</param>
@@ -405,13 +407,13 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException UserDataArgumentTypeMismatch(DataType t, Type clrType)
+		public static NetRuntimeException UserDataArgumentTypeMismatch(DataType t, Type clrType)
 		{
-			return new ScriptRuntimeException("cannot find a conversion from a MoonSharp {0} to a clr {1}", t.ToString().ToLowerInvariant(), clrType.FullName);
+			return new NetRuntimeException("cannot find a conversion from a MoonSharp {0} to a clr {1}", t.ToString().ToLowerInvariant(), clrType.FullName);
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an attempt to index an invalid member of a userdata was done.
 		/// </summary>
 		/// <param name="typename">The name of the userdata type.</param>
@@ -419,89 +421,89 @@ namespace MoonSharp.Interpreter
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException UserDataMissingField(string typename, string fieldname)
+		public static NetRuntimeException UserDataMissingField(string typename, string fieldname)
 		{
-			return new ScriptRuntimeException("cannot access field {0} of userdata<{1}>", fieldname, typename);
+			return new NetRuntimeException("cannot access field {0} of userdata<{1}>", fieldname, typename);
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an attempt resume a coroutine in an invalid state was done.
 		/// </summary>
 		/// <param name="state">The state of the coroutine.</param>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException CannotResumeNotSuspended(CoroutineState state)
+		public static NetRuntimeException CannotResumeNotSuspended(CoroutineState state)
 		{
 			if (state == CoroutineState.Dead)
-				return new ScriptRuntimeException("cannot resume dead coroutine");
+				return new NetRuntimeException("cannot resume dead coroutine");
 			else
-				return new ScriptRuntimeException("cannot resume non-suspended coroutine");
+				return new NetRuntimeException("cannot resume non-suspended coroutine");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an attempt to yield across a CLR boundary was made.
 		/// </summary>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException CannotYield()
+		public static NetRuntimeException CannotYield()
 		{
-			return new ScriptRuntimeException("attempt to yield across a CLR-call boundary");
+			return new NetRuntimeException("attempt to yield across a CLR-call boundary");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an attempt to yield from the main coroutine was made.
 		/// </summary>
 		/// <returns>
 		/// The exception to be raised.
 		/// </returns>
-		public static ScriptRuntimeException CannotYieldMain()
+		public static NetRuntimeException CannotYieldMain()
 		{
-			return new ScriptRuntimeException("attempt to yield from outside a coroutine");
+			return new NetRuntimeException("attempt to yield from outside a coroutine");
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an attempt to call a non-function was made
 		/// </summary>
 		/// <param name="type">The lua non-function data type.</param>
 		/// <param name="debugText">The debug text to aid location (appears as "near 'xxx'").</param>
 		/// <returns></returns>
-		public static ScriptRuntimeException AttemptToCallNonFunc(DataType type, string debugText = null)
+		public static NetRuntimeException AttemptToCallNonFunc(DataType type, string debugText = null)
 		{
 			string functype = type.ToErrorTypeString();
 
 			if (debugText != null)
-				return new ScriptRuntimeException("attempt to call a {0} value near '{1}'", functype, debugText);
+				return new NetRuntimeException("attempt to call a {0} value near '{1}'", functype, debugText);
 			else
-				return new ScriptRuntimeException("attempt to call a {0} value", functype);
+				return new NetRuntimeException("attempt to call a {0} value", functype);
 		}
 
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an attempt to access a non-static member from a static userdata was made
 		/// </summary>
 		/// <param name="desc">The member descriptor.</param>
-		public static ScriptRuntimeException AccessInstanceMemberOnStatics(IMemberDescriptor desc)
+		public static NetRuntimeException AccessInstanceMemberOnStatics(IMemberDescriptor desc)
 		{
-			return new ScriptRuntimeException("attempt to access instance member {0} from a static userdata", desc.Name);
+			return new NetRuntimeException("attempt to access instance member {0} from a static userdata", desc.Name);
 		}
 
 		/// <summary>
-		/// Creates a ScriptRuntimeException with a predefined error message specifying that
+		/// Creates a NetRuntimeException with a predefined error message specifying that
 		/// an attempt to access a non-static member from a static userdata was made
 		/// </summary>
 		/// <param name="typeDescr">The type descriptor.</param>
 		/// <param name="desc">The member descriptor.</param>
 		/// <returns></returns>
-		public static ScriptRuntimeException AccessInstanceMemberOnStatics(IUserDataDescriptor typeDescr, IMemberDescriptor desc)
+		public static NetRuntimeException AccessInstanceMemberOnStatics(IUserDataDescriptor typeDescr, IMemberDescriptor desc)
 		{
-			return new ScriptRuntimeException("attempt to access instance member {0}.{1} from a static userdata", typeDescr.Name, desc.Name);
+			return new NetRuntimeException("attempt to access instance member {0}.{1} from a static userdata", typeDescr.Name, desc.Name);
 		}
 
 		/// <summary>
@@ -511,7 +513,7 @@ namespace MoonSharp.Interpreter
 		public override void Rethrow()
 		{
 			if (Script.GlobalOptions.RethrowExceptionNested)
-				throw new ScriptRuntimeException(this);
+				throw new NetRuntimeException(this);
 		}
 
 	}

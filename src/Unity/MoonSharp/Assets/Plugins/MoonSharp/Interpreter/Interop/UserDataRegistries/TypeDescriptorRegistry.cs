@@ -86,13 +86,14 @@ namespace MoonSharp.Interpreter.Interop.UserDataRegistries
 		/// Additionally, it's a good practice to discard all previous loaded scripts after calling this method.
 		/// </summary>
 		/// <param name="t">The The type to be unregistered</param>
-		internal static void UnregisterType(Type t)
+		/// <param name="deleteHistory">Type removed from registration history</param>
+		internal static void UnregisterType(Type t, bool deleteHistory = false)
 		{
 			lock (s_Lock)
 			{
 				if (s_TypeRegistry.ContainsKey(t))
 				{
-					PerformRegistration(t, null, s_TypeRegistry[t]);
+					PerformRegistration(t, null, s_TypeRegistry[t], deleteHistory);
 				}
 			}
 		}
@@ -191,7 +192,7 @@ namespace MoonSharp.Interpreter.Interop.UserDataRegistries
 			}
 		}
 
-		private static IUserDataDescriptor PerformRegistration(Type type, IUserDataDescriptor newDescriptor, IUserDataDescriptor oldDescriptor)
+		private static IUserDataDescriptor PerformRegistration(Type type, IUserDataDescriptor newDescriptor, IUserDataDescriptor oldDescriptor, bool deleteHistory = false)
 		{
 			IUserDataDescriptor result = RegistrationPolicy.HandleRegistration(newDescriptor, oldDescriptor);
 
@@ -200,6 +201,7 @@ namespace MoonSharp.Interpreter.Interop.UserDataRegistries
 				if (result == null)
 				{
 					s_TypeRegistry.Remove(type);
+					if (deleteHistory) { s_TypeRegistryHistory.Remove(type); }
 				}
 				else
 				{
