@@ -10,7 +10,6 @@
     <AssemblyName>MoonSharp.VsCodeDebugger</AssemblyName>
     <PackageId>MoonSharp.VsCodeDebugger.netcore</PackageId>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
