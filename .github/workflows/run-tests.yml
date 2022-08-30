@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: Run tests
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.repository }}
+          ref: ${{ inputs.ref }}
+          submodules: recursive
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: |
+            6.0.x
+
+      - name: Run tests
+        continue-on-error: true
+        run: |
+          set +e
+          dotnet test MoonSharp.sln -clp:"ErrorsOnly;Summary" --logger "trx;LogFileName=$PWD/test-results.trx"
+          echo "EXITCODE=$?" >> "$GITHUB_ENV"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-results.trx
+
+      - name: Set exit code
+        run: exit "$EXITCODE"
