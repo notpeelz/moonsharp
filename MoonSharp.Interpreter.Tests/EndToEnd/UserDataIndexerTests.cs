@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MoonSharp.Interpreter.Interop;
 using NUnit.Framework;
 
 namespace MoonSharp.Interpreter.Tests.EndToEnd
@@ -26,7 +27,7 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 			}
 		}
 
-		private void IndexerTest(string code, int expected)
+		private void IndexerTest(string code, int expected, DataType expectedDataType = DataType.UserData)
 		{
 			Script S = new Script();
 
@@ -38,15 +39,25 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue v = S.DoString(code);
 
-			Assert.AreEqual(DataType.Number, v.Type);
-			Assert.AreEqual(expected, v.Number);
+			Assert.AreEqual(expectedDataType, v.Type);
+			switch (expectedDataType)
+			{
+				case DataType.UserData:
+					Assert.AreEqual((LuaInt32)expected, v.UserData.Object);
+					break;
+				case DataType.Number:
+					Assert.AreEqual(expected, v.Number);
+					break;
+				default:
+					throw new NotImplementedException();
+			}
 		}
 
 		[Test]
 		public void Interop_SingleSetterOnly()
 		{
 			string script = @"o[1] = 1; return 13";
-			IndexerTest(script, 13);
+			IndexerTest(script, 13, DataType.Number);
 		}
 
 
@@ -68,7 +79,7 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 		public void Interop_MultiIndexerMetatableGetSet()
 		{
 			string script = @"
-				m = { 
+				m = {
 					__index = o,
 					__newindex = o
 				}
@@ -84,10 +95,10 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 		[Test]
 		public void Interop_MultiIndexerMetamethodGetSet()
 		{
-            Assert.Throws<ScriptRuntimeException>(() =>
-            {
-                string script = @"
-				m = { 
+			Assert.Throws<ScriptRuntimeException>(() =>
+			{
+				string script = @"
+				m = {
 					__index = function() end,
 					__newindex = function() end
 				}
@@ -97,8 +108,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 				setmetatable(t, m);
 
 				t[10,11,12] = 1234; return t[10,11,12];";
-                IndexerTest(script, 1234);
-            });
+				IndexerTest(script, 1234);
+			});
 		}
 
 
@@ -112,38 +123,38 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 			IndexerTest(script, 119);
 		}
 
-        [Test]
-        public void Interop_ExpListIndexingCompilesButNotRun1()
-        {
-            Assert.Throws<ScriptRuntimeException>(() =>
-            {
-                string script = @"
-				    x = { 99, 98, 97, 96 }				
-				    return x[2,3];
-				    ";
+		[Test]
+		public void Interop_ExpListIndexingCompilesButNotRun1()
+		{
+			Assert.Throws<ScriptRuntimeException>(() =>
+			{
+				string script = @"
+					x = { 99, 98, 97, 96 }
+					return x[2,3];
+					";
 
-                DynValue res = Script.RunString(script);
+				DynValue res = Script.RunString(script);
 
-                Assert.AreEqual(DataType.Number, res.Type);
-                Assert.AreEqual(98, res.Number);
-            });
+				Assert.AreEqual(DataType.Number, res.Type);
+				Assert.AreEqual(98, res.Number);
+			});
 		}
 
 		[Test]
 		public void Interop_ExpListIndexingCompilesButNotRun2()
 		{
-            Assert.Throws<ScriptRuntimeException>(() =>
-            {
-                string script = @"
-				    x = { 99, 98, 97, 96 }
-				    x[2,3] = 5;
-				    ";
+			Assert.Throws<ScriptRuntimeException>(() =>
+			{
+				string script = @"
+					x = { 99, 98, 97, 96 }
+					x[2,3] = 5;
+					";
 
-                DynValue res = Script.RunString(script);
+				DynValue res = Script.RunString(script);
 
-                Assert.AreEqual(DataType.Number, res.Type);
-                Assert.AreEqual(98, res.Number);
-            });
+				Assert.AreEqual(DataType.Number, res.Type);
+				Assert.AreEqual(98, res.Number);
+			});
 		}
 
 

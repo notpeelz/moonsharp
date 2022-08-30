@@ -62,8 +62,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(DataType.Number, res.Type);
-			Assert.AreEqual(321, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)321, res.UserData.Object);
 		}
 
 		public void Test_NIntPropertyGetter(InteropAccessMode opt)
@@ -87,9 +87,9 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 			DynValue res = S.DoString(script);
 
 			Assert.AreEqual(DataType.Tuple, res.Type);
-			Assert.AreEqual(321.0, res.Tuple[0].Number);
-			Assert.AreEqual(DataType.Number, res.Tuple[0].Type);
-			Assert.AreEqual(DataType.Nil, res.Tuple[1].Type);
+            Assert.AreEqual(DataType.UserData, res.Tuple[0].Type);
+            Assert.AreEqual(DataType.Nil, res.Tuple[1].Type);
+            Assert.AreEqual((LuaInt32)321, res.Tuple[0].UserData.Object);
 		}
 
 		public void Test_ObjPropertyGetter(InteropAccessMode opt)
@@ -141,7 +141,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(19, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)19, res.UserData.Object);
 		}
 
 		public void Test_NIntPropertySetter(InteropAccessMode opt)
@@ -169,8 +170,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 			DynValue res = S.DoString(script);
 
 			Assert.AreEqual(DataType.Nil, res.Tuple[0].Type);
-			Assert.AreEqual(DataType.Number, res.Tuple[1].Type);
-			Assert.AreEqual(19, res.Tuple[1].Number);
+			Assert.AreEqual(DataType.UserData, res.Tuple[1].Type);
+			Assert.AreEqual((LuaInt32)19, res.Tuple[1].UserData.Object);
 		}
 
 
@@ -259,8 +260,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(DataType.Number, res.Type);
-			Assert.AreEqual(5, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)5, res.UserData.Object);
 		}
 
 		public void Test_RoIntProperty2Getter(InteropAccessMode opt)
@@ -280,8 +281,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(DataType.Number, res.Type);
-			Assert.AreEqual(1234, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)1234, res.UserData.Object);
 		}
 
 		public void Test_RoIntPropertySetter(InteropAccessMode opt)
@@ -359,7 +360,7 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(19, res.Number);
+			Assert.AreEqual((LuaInt32)19, res.UserData.Object);
 		}
 
 		public void Test_WoIntProperty2Setter(InteropAccessMode opt)
@@ -380,7 +381,7 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(19, res.Number);
+			Assert.AreEqual((LuaInt32)19, res.UserData.Object);
 		}
 
 
@@ -808,8 +809,9 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(19, res.Number);
-		}
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)19, res.UserData.Object);
+        }
 
 		[Test]
 		public void VInterop_OutOfRangeNumber()

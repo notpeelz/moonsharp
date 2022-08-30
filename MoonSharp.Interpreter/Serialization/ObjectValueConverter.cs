@@ -4,12 +4,18 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using MoonSharp.Interpreter.Compatibility;
+using MoonSharp.Interpreter.Interop;
 using MoonSharp.Interpreter.Interop.Converters;
 
 namespace MoonSharp.Interpreter.Serialization
 {
 	public static class ObjectValueConverter
 	{
+		static ObjectValueConverter()
+		{
+			PrimitiveTypeWrapperModule.RegisterWrapperTypes();
+		}
+
 		public static DynValue SerializeObjectToDynValue(Script script, object o, DynValue valueForNulls = null)
 		{
 			if (o == null)

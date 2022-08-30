@@ -21,16 +21,17 @@ namespace MoonSharp.Interpreter.Interop.Converters
 			if (obj is DynValue)
 				return (DynValue)obj;
 
-			Type t = obj.GetType();
-
 			if (obj is bool)
 				return DynValue.NewBoolean((bool)obj);
 
 			if (obj is string || obj is StringBuilder || obj is char)
 				return DynValue.NewString(obj.ToString());
 
-			if (NumericConversions.NumericTypes.Contains(t))
-				return DynValue.NewNumber(NumericConversions.TypeToDouble(t, obj));
+			if (obj is double)
+				return DynValue.NewNumber((double)obj);
+
+			if (PrimitiveTypeWrapperModule.Types.Contains(obj.GetType()))
+				return PrimitiveTypeWrapperModule.CreateDynValue(script, obj);
 
 			if (obj is Table)
 				return DynValue.NewTable((Table)obj);
@@ -60,8 +61,6 @@ namespace MoonSharp.Interpreter.Interop.Converters
 					return v;
 			}
 
-			Type t = obj.GetType();
-
 			if (obj is bool)
 				return DynValue.NewBoolean((bool)obj);
 
@@ -71,8 +70,11 @@ namespace MoonSharp.Interpreter.Interop.Converters
 			if (obj is Closure)
 				return DynValue.NewClosure((Closure)obj);
 
-			if (NumericConversions.NumericTypes.Contains(t))
-				return DynValue.NewNumber(NumericConversions.TypeToDouble(t, obj));
+			if (obj is double)
+				return DynValue.NewNumber((double)obj);
+
+			if (PrimitiveTypeWrapperModule.Types.Contains(obj.GetType()))
+				return PrimitiveTypeWrapperModule.CreateDynValue(script, obj);
 
 			if (obj is Table)
 				return DynValue.NewTable((Table)obj);

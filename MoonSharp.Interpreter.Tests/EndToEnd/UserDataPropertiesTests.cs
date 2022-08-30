@@ -65,8 +65,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(DataType.Number, res.Type);
-			Assert.AreEqual(321, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)321, res.UserData.Object);
 		}
 
 		public void Test_NIntPropertyGetter(InteropAccessMode opt)
@@ -90,9 +90,9 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 			DynValue res = S.DoString(script);
 
 			Assert.AreEqual(DataType.Tuple, res.Type);
-			Assert.AreEqual(321.0, res.Tuple[0].Number);
-			Assert.AreEqual(DataType.Number, res.Tuple[0].Type);
+			Assert.AreEqual(DataType.UserData, res.Tuple[0].Type);
 			Assert.AreEqual(DataType.Nil, res.Tuple[1].Type);
+			Assert.AreEqual((LuaInt32)321, res.Tuple[0].UserData.Object);
 		}
 
 		public void Test_ObjPropertyGetter(InteropAccessMode opt)
@@ -282,8 +282,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(DataType.Number, res.Type);
-			Assert.AreEqual(5, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)5, res.UserData.Object);
 		}
 
 		public void Test_RoIntProperty2Getter(InteropAccessMode opt)
@@ -303,8 +303,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(DataType.Number, res.Type);
-			Assert.AreEqual(1234, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)1234, res.UserData.Object);
 		}
 
 		public void Test_RoIntPropertySetter(InteropAccessMode opt)
@@ -610,19 +610,19 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 		[Test]
 		public void Interop_InvalidPropertySetter_None()
 		{
-            Assert.Throws<ScriptRuntimeException>(() => Test_InvalidPropertySetter(InteropAccessMode.Reflection));
+			Assert.Throws<ScriptRuntimeException>(() => Test_InvalidPropertySetter(InteropAccessMode.Reflection));
 		}
 
 		[Test]
 		public void Interop_InvalidPropertySetter_Lazy()
 		{
-            Assert.Throws<ScriptRuntimeException>(() => Test_InvalidPropertySetter(InteropAccessMode.LazyOptimized));
+			Assert.Throws<ScriptRuntimeException>(() => Test_InvalidPropertySetter(InteropAccessMode.LazyOptimized));
 		}
 
 		[Test]
 		public void Interop_InvalidPropertySetter_Precomputed()
 		{
-            Assert.Throws<ScriptRuntimeException>(() => Test_InvalidPropertySetter(InteropAccessMode.Preoptimized));
+			Assert.Throws<ScriptRuntimeException>(() => Test_InvalidPropertySetter(InteropAccessMode.Preoptimized));
 		}
 
 

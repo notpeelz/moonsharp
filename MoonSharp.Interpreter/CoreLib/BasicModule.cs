@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using MoonSharp.Interpreter.Debugging;
+using MoonSharp.Interpreter.Interop;
 
 namespace MoonSharp.Interpreter.CoreLib
 {
@@ -25,6 +26,9 @@ namespace MoonSharp.Interpreter.CoreLib
 			if (args.Count < 1) throw ScriptRuntimeException.BadArgumentValueExpected(0, "type");
 
 			DynValue v = args[0];
+			if (v.Type == DataType.UserData && v.UserData.Object is IPrimitiveTypeWrapper)
+				return DynValue.NewString(DataType.Number.ToLuaTypeString());
+
 			return DynValue.NewString(v.Type.ToLuaTypeString());
 		}
 
@@ -85,33 +89,33 @@ namespace MoonSharp.Interpreter.CoreLib
 		public static DynValue error(ScriptExecutionContext executionContext, CallbackArguments args)
 		{
 			DynValue message = args.AsType(0, "error", DataType.String, false);
-            		DynValue level = args.AsType(1, "error", DataType.Number, true);
+			DynValue level = args.AsType(1, "error", DataType.Number, true);
 
-            		Coroutine cor = executionContext.GetCallingCoroutine();
+			Coroutine cor = executionContext.GetCallingCoroutine();
 
-            		WatchItem[] stacktrace = cor.GetStackTrace(0, executionContext.CallingLocation);
+			WatchItem[] stacktrace = cor.GetStackTrace(0, executionContext.CallingLocation);
 
-            		var e = new ScriptRuntimeException(message.String);
+			var e = new ScriptRuntimeException(message.String);
 
-            		if (level.IsNil())
-            		{
-                		level = DynValue.NewNumber(1); // Default
-            		}
+			if (level.IsNil())
+			{
+				level = DynValue.NewNumber(1); // Default
+			}
 
-            		if (level.Number > 0 && level.Number < stacktrace.Length)
-            		{
-                    		// Lua allows levels up to max. value of a double, while this has to be cast to int
-                    		// Probably never will be a problem, just leaving this note here
-                    		WatchItem wi = stacktrace[(int)level.Number];
+			if (level.Number > 0 && level.Number < stacktrace.Length)
+			{
+				// Lua allows levels up to max. value of a double, while this has to be cast to int
+				// Probably never will be a problem, just leaving this note here
+				WatchItem wi = stacktrace[(int)level.Number];
 
-                    		e.DecorateMessage(executionContext.GetScript(), wi.Location);
-            		}
-            		else
-            		{
-                		e.DoNotDecorateMessage = true;
-            		}
+				e.DecorateMessage(executionContext.GetScript(), wi.Location);
+			}
+			else
+			{
+				e.DoNotDecorateMessage = true;
+			}
 
-            		throw e;
+			throw e;
 		}
 
 
@@ -226,6 +230,9 @@ namespace MoonSharp.Interpreter.CoreLib
 				if (e.Type == DataType.Number)
 					return e;
 
+				if (e.Type == DataType.UserData && e.UserData.Object is IPrimitiveTypeWrapper primitiveType)
+					return DynValue.NewNumber(primitiveType.ToDouble());
+
 				if (e.Type != DataType.String)
 					return DynValue.Nil;
 
@@ -238,9 +245,9 @@ namespace MoonSharp.Interpreter.CoreLib
 			}
 			else
 			{
-                //!COMPAT: tonumber supports only 2,8,10 or 16 as base
-                //UPDATE: added support for 3-9 base numbers
-                DynValue ee;
+				//!COMPAT: tonumber supports only 2,8,10 or 16 as base
+				//UPDATE: added support for 3-9 base numbers
+				DynValue ee;
 
 				if (args[0].Type != DataType.Number)
 					ee = args.AsType(0, "tonumber", DataType.String, false);
@@ -249,28 +256,28 @@ namespace MoonSharp.Interpreter.CoreLib
 
 				int bb = (int)b.Number;
 
-			    uint uiv = 0;
-                if (bb == 2 || bb == 8 || bb == 10 || bb == 16)
-			    {
-                    uiv = Convert.ToUInt32(ee.String.Trim(), bb);
-                }
-			    else if (bb < 10 && bb > 2) // Support for 3, 4, 5, 6, 7 and 9 based numbers
-			    {
-			        foreach (char digit in ee.String.Trim())
-			        {
-			            int value = digit - 48;
-			            if (value < 0 || value >= bb)
-			            {
-                            throw new ScriptRuntimeException("bad argument #1 to 'tonumber' (invalid character)");
-                        }
+				uint uiv = 0;
+				if (bb == 2 || bb == 8 || bb == 10 || bb == 16)
+				{
+					uiv = Convert.ToUInt32(ee.String.Trim(), bb);
+				}
+				else if (bb < 10 && bb > 2) // Support for 3, 4, 5, 6, 7 and 9 based numbers
+				{
+					foreach (char digit in ee.String.Trim())
+					{
+						int value = digit - 48;
+						if (value < 0 || value >= bb)
+						{
+							throw new ScriptRuntimeException("bad argument #1 to 'tonumber' (invalid character)");
+						}
 
-                        uiv = (uint)(uiv * bb) + (uint)value;
-			        }
-                }
-			    else
-			    {
-                    throw new ScriptRuntimeException("bad argument #2 to 'tonumber' (base out of range)");
-                }
+						uiv = (uint)(uiv * bb) + (uint)value;
+					}
+				}
+				else
+				{
+					throw new ScriptRuntimeException("bad argument #2 to 'tonumber' (base out of range)");
+				}
 
 				return DynValue.NewNumber(uiv);
 			}

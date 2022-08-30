@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MoonSharp.Interpreter.Interop;
 using NUnit.Framework;
 
 namespace MoonSharp.Interpreter.Tests.EndToEnd
@@ -246,8 +247,17 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 			S.Globals.Set("o2", UserData.Create(new ClassWithCount()));
 			S.Globals.Set("o3", UserData.Create(new ClassWithLength()));
 
-			Assert.AreEqual(55, S.DoString("return #o3").Number);
-			Assert.AreEqual(123, S.DoString("return #o2").Number);
+			{
+				var r = S.DoString("return #o3");
+				Assert.AreEqual(DataType.UserData, r.Type);
+				Assert.AreEqual((LuaInt32)55, r.UserData.Object);
+			}
+
+			{
+				var r = S.DoString("return #o2");
+				Assert.AreEqual(DataType.UserData, r.Type);
+				Assert.AreEqual((LuaInt32)123, r.UserData.Object);
+			}
 
 			Assert.Catch<ScriptRuntimeException>(() => S.DoString("return #o1"));
 		}
@@ -319,8 +329,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue v = S.DoString(code);
 
-			Assert.AreEqual(DataType.Number, v.Type);
-			Assert.AreEqual(output, v.Number);
+			Assert.AreEqual(DataType.UserData, v.Type);
+			Assert.AreEqual((LuaInt32)output, v.UserData.Object);
 		}
 
 		[Test]

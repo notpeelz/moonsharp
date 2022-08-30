@@ -7,6 +7,7 @@ using System.Threading;
 using MoonSharp.Interpreter.Execution;
 using MoonSharp.Interpreter.Execution.VM;
 using System.Collections;
+using MoonSharp.Interpreter.Interop;
 
 namespace MoonSharp.Interpreter
 {
@@ -803,16 +804,14 @@ namespace MoonSharp.Interpreter
 		/// <returns>The string representation, or null if not number, not string.</returns>
 		public string CastToString()
 		{
-			DynValue rv = ToScalar();
-			if (rv.Type == DataType.Number)
+			var rv = ToScalar();
+			return rv.Type switch
 			{
-				return rv.Number.ToString();
-			}
-			else if (rv.Type == DataType.String)
-			{
-				return rv.String;
-			}
-			return null;
+				DataType.Number => rv.Number.ToString(CultureInfo.InvariantCulture),
+				DataType.UserData when rv.UserData.Object is IPrimitiveTypeWrapper primitive => primitive.ToString(CultureInfo.InvariantCulture),
+				DataType.String => rv.String,
+				_ => null
+			};
 		}
 
 		/// <summary>
@@ -821,18 +820,14 @@ namespace MoonSharp.Interpreter
 		/// <returns>The string representation, or null if not number, not string or non-convertible-string.</returns>
 		public double? CastToNumber()
 		{
-			DynValue rv = ToScalar();
-			if (rv.Type == DataType.Number)
+			var rv = ToScalar();
+			return rv.Type switch
 			{
-				return rv.Number;
-			}
-			else if (rv.Type == DataType.String)
-			{
-				double num;
-				if (double.TryParse(rv.String, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
-					return num;
-			}
-			return null;
+				DataType.Number => rv.Number,
+				DataType.String when double.TryParse(rv.String, NumberStyles.Any, CultureInfo.InvariantCulture, out var num) => num,
+				DataType.UserData when rv.UserData.Object is IPrimitiveTypeWrapper wrapper => wrapper.ToDouble(),
+				_ => null,
+			};
 		}
 
 

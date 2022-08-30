@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MoonSharp.Interpreter.Interop;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 namespace MoonSharp.Interpreter.Tests.EndToEnd
 {
@@ -39,7 +40,9 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 				func(R);
 			");
 
-			Assert.AreEqual(3.0, S.Globals.Get("x").Number);
+			var x = S.Globals.Get("x");
+			Assert.AreEqual(DataType.UserData, x.Type);
+			Assert.AreEqual((LuaInt32)3, x.UserData.Object);
 		}
 
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MoonSharp.Interpreter.Interop;
 using MoonSharp.Interpreter.Tree;
 
 namespace MoonSharp.Interpreter.Serialization.Json
@@ -105,6 +106,12 @@ namespace MoonSharp.Interpreter.Serialization.Json
 				case DataType.Nil:
 				case DataType.Void:
 				case DataType.UserData:
+					if (value.UserData.Object is IPrimitiveTypeWrapper wrapper)
+					{
+						sb.Append(wrapper.ToDouble().ToString("r"));
+						break;
+					}
+					goto default;
 				default:
 					sb.Append("null");
 					break;
@@ -129,6 +136,7 @@ namespace MoonSharp.Interpreter.Serialization.Json
 			return value.Type == DataType.Boolean || value.IsNil() ||
 				value.Type == DataType.Number || value.Type == DataType.String ||
 				value.Type == DataType.Table ||
+				(value.Type == DataType.UserData && value.UserData.Object is IPrimitiveTypeWrapper) ||
 				(JsonNull.IsJsonNull(value));
 		}
 

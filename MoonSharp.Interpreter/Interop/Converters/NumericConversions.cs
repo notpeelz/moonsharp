@@ -43,24 +43,24 @@ namespace MoonSharp.Interpreter.Interop.Converters
 		{
 			type = Nullable.GetUnderlyingType(type) ?? type;
 
-            		try
-            		{
-                		if (type == typeof(double)) return d;
-                		if (type == typeof(sbyte)) return Convert.ToSByte(d);
-                		if (type == typeof(byte)) return Convert.ToByte(d);
-                		if (type == typeof(short)) return Convert.ToInt16(d);
-                		if (type == typeof(ushort)) return Convert.ToUInt16(d);
-                		if (type == typeof(int)) return Convert.ToInt32(d);
-                		if (type == typeof(uint)) return Convert.ToUInt32(d);
-                		if (type == typeof(long)) return Convert.ToInt64(d);
-                		if (type == typeof(ulong)) return Convert.ToUInt64(d);
-                		if (type == typeof(float)) return Convert.ToSingle(d);
-                		if (type == typeof(decimal)) return Convert.ToDecimal(d);
-            		}
-            		catch (Exception)
-            		{
-            		    
-            		}
+			try
+			{
+				if (type == typeof(double)) return d;
+				if (type == typeof(sbyte)) return Convert.ToSByte(d);
+				if (type == typeof(byte)) return Convert.ToByte(d);
+				if (type == typeof(short)) return Convert.ToInt16(d);
+				if (type == typeof(ushort)) return Convert.ToUInt16(d);
+				if (type == typeof(int)) return Convert.ToInt32(d);
+				if (type == typeof(uint)) return Convert.ToUInt32(d);
+				if (type == typeof(long)) return Convert.ToInt64(d);
+				if (type == typeof(ulong)) return Convert.ToUInt64(d);
+				if (type == typeof(float)) return Convert.ToSingle(d);
+				if (type == typeof(decimal)) return Convert.ToDecimal(d);
+			}
+			catch (Exception)
+			{
+
+			}
 
 			return d;
 		}
@@ -70,20 +70,20 @@ namespace MoonSharp.Interpreter.Interop.Converters
 		/// </summary>
 		internal static double TypeToDouble(Type type, object d)
 		{
-            		if (type != typeof(double) &&
-                		type != typeof(sbyte) &&
-                		type != typeof(byte) &&
-                		type != typeof(short) &&
-                		type != typeof(ushort) &&
-                		type != typeof(int) &&
-                		type != typeof(uint) &&
-                		type != typeof(long) &&
-                		type != typeof(ulong) &&
-                		type != typeof(float) &&
-                		type != typeof(decimal))
-            		{
-                		return (double)d;
-            		}
+			if (type != typeof(double) &&
+				type != typeof(sbyte) &&
+				type != typeof(byte) &&
+				type != typeof(short) &&
+				type != typeof(ushort) &&
+				type != typeof(int) &&
+				type != typeof(uint) &&
+				type != typeof(long) &&
+				type != typeof(ulong) &&
+				type != typeof(float) &&
+				type != typeof(decimal))
+			{
+				return (double)d;
+			}
 
 			return Convert.ToDouble(d);
 		}

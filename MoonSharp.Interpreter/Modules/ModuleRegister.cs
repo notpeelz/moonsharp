@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using MoonSharp.Interpreter.Compatibility;
 using MoonSharp.Interpreter.CoreLib;
+using MoonSharp.Interpreter.Interop;
 using MoonSharp.Interpreter.Platforms;
 
 namespace MoonSharp.Interpreter
@@ -40,6 +41,8 @@ namespace MoonSharp.Interpreter
 			if (modules.Has(CoreModules.IO)) RegisterModuleType<IoModule>(table);
 			if (modules.Has(CoreModules.Debug)) RegisterModuleType<DebugModule>(table);
 			if (modules.Has(CoreModules.Json)) RegisterModuleType<JsonModule>(table);
+
+			RegisterModuleType<PrimitiveTypeWrapperModule>(table);
 
 			return table;
 		}

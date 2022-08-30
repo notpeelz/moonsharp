@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MoonSharp.Interpreter.Interop;
 using NUnit.Framework;
 
 namespace MoonSharp.Interpreter.Tests.EndToEnd
@@ -39,8 +40,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(DataType.Number, res.Type);
-			Assert.AreEqual(115, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)115, res.UserData.Object);
 		}
 
 		public void Test_ReadOnlyIntFieldGetter(InteropAccessMode opt)
@@ -60,8 +61,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(DataType.Number, res.Type);
-			Assert.AreEqual(123, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)123, res.UserData.Object);
 		}
 
 		public void Test_ConstIntFieldSetter(InteropAccessMode opt)
@@ -144,8 +145,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 
 			DynValue res = S.DoString(script);
 
-			Assert.AreEqual(DataType.Number, res.Type);
-			Assert.AreEqual(321, res.Number);
+			Assert.AreEqual(DataType.UserData, res.Type);
+			Assert.AreEqual((LuaInt32)321, res.UserData.Object);
 		}
 
 		public void Test_NIntFieldGetter(InteropAccessMode opt)
@@ -169,9 +170,9 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 			DynValue res = S.DoString(script);
 
 			Assert.AreEqual(DataType.Tuple, res.Type);
-			Assert.AreEqual(321.0, res.Tuple[0].Number);
-			Assert.AreEqual(DataType.Number, res.Tuple[0].Type);
+			Assert.AreEqual(DataType.UserData, res.Tuple[0].Type);
 			Assert.AreEqual(DataType.Nil, res.Tuple[1].Type);
+			Assert.AreEqual((LuaInt32)321, res.Tuple[0].UserData.Object);
 		}
 
 		public void Test_ObjFieldGetter(InteropAccessMode opt)
@@ -431,19 +432,19 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 		[Test]
 		public void Interop_InvalidFieldSetter_None()
 		{
-            Assert.Throws<ScriptRuntimeException>(() => Test_InvalidFieldSetter(InteropAccessMode.Reflection));
+			Assert.Throws<ScriptRuntimeException>(() => Test_InvalidFieldSetter(InteropAccessMode.Reflection));
 		}
 
 		[Test]
 		public void Interop_InvalidFieldSetter_Lazy()
 		{
-            Assert.Throws<ScriptRuntimeException>(() => Test_InvalidFieldSetter(InteropAccessMode.LazyOptimized));
+			Assert.Throws<ScriptRuntimeException>(() => Test_InvalidFieldSetter(InteropAccessMode.LazyOptimized));
 		}
 
 		[Test]
 		public void Interop_InvalidFieldSetter_Precomputed()
 		{
-            Assert.Throws<ScriptRuntimeException>(() => Test_InvalidFieldSetter(InteropAccessMode.Preoptimized));
+			Assert.Throws<ScriptRuntimeException>(() => Test_InvalidFieldSetter(InteropAccessMode.Preoptimized));
 		}
 
 

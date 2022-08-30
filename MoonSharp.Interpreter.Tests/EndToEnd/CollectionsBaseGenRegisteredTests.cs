@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using MoonSharp.Interpreter.Interop;
 using NUnit.Framework;
 
 namespace MoonSharp.Interpreter.Tests.EndToEnd
@@ -108,12 +109,12 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 		{
 			Do(@"
 				local list = o:GetList()
-				return list:Last();			
+				return list:Last();
 			",
 			 (r) =>
 			 {
-				 Assert.AreEqual(DataType.Number, r.Type);
-				 Assert.AreEqual(3, r.Number);
+				 Assert.AreEqual(DataType.UserData, r.Type);
+				 Assert.AreEqual((LuaInt32)3, r.UserData.Object);
 			 });
 		}
 
@@ -126,8 +127,8 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 			",
 			 (r) =>
 			 {
-				 Assert.AreEqual(DataType.Number, r.Type);
-				 Assert.AreEqual(6, r.Number);
+				 Assert.AreEqual(DataType.UserData, r.Type);
+				 Assert.AreEqual((LuaInt32)6, r.UserData.Object);
 			 });
 		}
 

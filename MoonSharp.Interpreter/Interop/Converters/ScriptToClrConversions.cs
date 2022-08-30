@@ -63,6 +63,9 @@ namespace MoonSharp.Interpreter.Interop.Converters
 				case DataType.Tuple:
 					return value.Tuple;
 				case DataType.UserData:
+					if (value.UserData.Object is IPrimitiveTypeWrapper wrapper)
+						return ConvertFromPrimitiveWrapper(wrapper);
+
 					if (value.UserData.Object != null)
 						return value.UserData.Object;
 					else if (value.UserData.Descriptor != null)
@@ -73,28 +76,6 @@ namespace MoonSharp.Interpreter.Interop.Converters
 					return value.Callback;
 				default:
 					throw ScriptRuntimeException.ConvertObjectFailed(value.Type);
-			}
-		}
-
-		public static MethodInfo HasImplicitConversion(Type baseType, Type targetType)
-		{
-			try
-			{
-				return Expression.Convert(Expression.Parameter(baseType, null), targetType).Method;
-			}
-			catch
-			{
-				if (baseType.BaseType != null)
-                {
-					return HasImplicitConversion(baseType.BaseType, targetType);
-				}
-
-				if (targetType.BaseType != null)
-				{
-					return HasImplicitConversion(baseType, targetType.BaseType);
-				}
-
-				return null;
 			}
 		}
 
@@ -120,9 +101,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 				return DynValueToObject(value);
 
 			if (desiredType.IsGenericParameter)
-			{
 				return DynValueToObject(value);
-			}
 
 			StringConversions.StringSubtype stringSubType = StringConversions.GetStringSubtype(desiredType);
 			string str = null;
@@ -165,7 +144,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						str = value.Boolean.ToString();
 
 					{
-						var conv = HasImplicitConversion(typeof(bool), desiredType);
+						var conv = typeof(bool).GetImplicitOperatorMethod(desiredType);
 
 						if (conv != null)
 						{
@@ -181,19 +160,19 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						return NumericConversions.DoubleToType(underType, value.Number);
 					}
 
-                    if (NumericConversions.NumericTypes.Contains(desiredType))
-                    {
-                        object d = NumericConversions.DoubleToType(desiredType, value.Number);
-                        if (d.GetType() == desiredType)
-                            	return d;
-                        break;
-                    }
+					if (NumericConversions.NumericTypes.Contains(desiredType))
+					{
+						object d = NumericConversions.DoubleToType(desiredType, value.Number);
+						if (d.GetType() == desiredType)
+							return d;
+						break;
+					}
 
 					if (stringSubType != StringConversions.StringSubtype.None)
 						str = value.Number.ToString(CultureInfo.InvariantCulture);
 
 					{
-						var conv = HasImplicitConversion(typeof(double), desiredType);
+						var conv = typeof(double).GetImplicitOperatorMethod(desiredType);
 
 						if (conv != null)
 						{
@@ -207,7 +186,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 						str = value.String;
 
 					{
-						var conv = HasImplicitConversion(typeof(string), desiredType);
+						var conv = typeof(string).GetImplicitOperatorMethod(desiredType);
 
 						if (conv != null)
 						{
@@ -227,6 +206,9 @@ namespace MoonSharp.Interpreter.Interop.Converters
 				case DataType.UserData:
 					if (value.UserData.Object != null)
 					{
+						if (value.UserData.Object is IPrimitiveTypeWrapper wrapper)
+							return ConvertFromPrimitiveWrapper(wrapper);
+
 						var udObj = value.UserData.Object;
 						var udDesc = value.UserData.Descriptor;
 
@@ -234,7 +216,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 							return udObj;
 
 						{
-							var conv = HasImplicitConversion(udObj.GetType(), desiredType);
+							var conv = udObj.GetType().GetImplicitOperatorMethod(desiredType);
 
 							if (conv != null)
 							{
@@ -328,7 +310,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 					if (stringSubType != StringConversions.StringSubtype.None)
 						return WEIGHT_BOOL_TO_STRING;
 
-					if (HasImplicitConversion(typeof(bool), desiredType) != null)
+					if (typeof(bool).GetImplicitOperatorMethod(desiredType) != null)
 						return WEIGHT_EXACT_MATCH;
 					break;
 				case DataType.Number:
@@ -341,7 +323,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 					if (stringSubType != StringConversions.StringSubtype.None)
 						return WEIGHT_NUMBER_TO_STRING;
 
-					if (HasImplicitConversion(typeof(double), desiredType) != null)
+					if (typeof(double).GetImplicitOperatorMethod(desiredType) != null)
 						return WEIGHT_EXACT_MATCH;
 					break;
 				case DataType.String:
@@ -352,7 +334,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 					else if (stringSubType == StringConversions.StringSubtype.Char)
 						return WEIGHT_STRING_TO_CHAR;
 
-					if (HasImplicitConversion(typeof(string), desiredType) != null)
+					if (typeof(string).GetImplicitOperatorMethod(desiredType) != null)
 						return WEIGHT_EXACT_MATCH;
 
 					break;
@@ -367,10 +349,12 @@ namespace MoonSharp.Interpreter.Interop.Converters
 				case DataType.UserData:
 					if (value.UserData.Object != null)
 					{
+						if (value.UserData.Object is IPrimitiveTypeWrapper) return WEIGHT_EXACT_MATCH;
+
 						var udObj = value.UserData.Object;
 						var udDesc = value.UserData.Descriptor;
 
-						if (udDesc.IsTypeCompatible(desiredType, udObj) || HasImplicitConversion(udObj.GetType(), desiredType) != null)
+						if (udDesc.IsTypeCompatible(desiredType, udObj) || udObj.GetType().GetImplicitOperatorMethod(desiredType) != null)
 							return WEIGHT_EXACT_MATCH;
 
 						if (stringSubType != StringConversions.StringSubtype.None)
@@ -398,8 +382,19 @@ namespace MoonSharp.Interpreter.Interop.Converters
 				return WEIGHT_NUMBER_DOWNCAST;
 		}
 
-
-
-
+		private static object ConvertFromPrimitiveWrapper(IPrimitiveTypeWrapper wrapper)
+		{
+			if (wrapper is LuaSByte @sbyte) return (sbyte)@sbyte;
+			if (wrapper is LuaByte @byte) return (byte)@byte;
+			if (wrapper is LuaInt16 @short) return (short)@short;
+			if (wrapper is LuaUInt16 @ushort) return (ushort)@ushort;
+			if (wrapper is LuaInt32 @int) return (int)@int;
+			if (wrapper is LuaUInt32 @uint) return (uint)@uint;
+			if (wrapper is LuaInt64 @long) return (long)@long;
+			if (wrapper is LuaUInt64 @ulong) return (ulong)@ulong;
+			if (wrapper is LuaSingle @float) return (float)@float;
+			if (wrapper is LuaDecimal @decimal) return (decimal)@decimal;
+			throw new NotImplementedException();
+		}
 	}
 }
