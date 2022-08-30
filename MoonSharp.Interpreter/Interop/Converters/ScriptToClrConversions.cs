@@ -276,7 +276,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 			if (desiredType.IsByRef)
 				desiredType = desiredType.GetElementType();
 
-			var customConverter = Script.GlobalOptions.CustomConverters.GetScriptToClrCustomConversion(value, desiredType, checkConversionPredicate: true);
+			var customConverter = Script.GlobalOptions.CustomConverters.GetScriptToClrCustomConversion(value, desiredType);
 			if (customConverter != null)
 				return WEIGHT_CUSTOM_CONVERTER_MATCH;
 
