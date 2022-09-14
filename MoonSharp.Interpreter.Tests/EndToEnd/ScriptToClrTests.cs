@@ -23,5 +23,22 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 			s.Globals["Test"] = UserData.CreateStatic<EnumTest>();
 			s.DoString("Test.__new().TakesNullableEnum(1)");
 		}
+
+		private struct MyStruct { }
+
+		private class StructTest
+		{
+			public void TakesNonNullableStruct(MyStruct s = default) { }
+		}
+
+		[Test]
+		public void TakesOptionalNonNullableStruct()
+		{
+			var s = new Script();
+			UserData.RegisterType<MyStruct>();
+			UserData.RegisterType<StructTest>(InteropAccessMode.LazyOptimized);
+			s.Globals["Test"] = UserData.CreateStatic<StructTest>();
+			s.DoString("Test.__new().TakesNonNullableStruct()");
+		}
 	}
 }
