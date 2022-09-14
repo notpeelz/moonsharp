@@ -178,7 +178,7 @@ namespace MoonSharp.Interpreter.Interop.Converters
 					if (Framework.Do.IsEnum(desiredType))
 					{	// number to enum conv
 						Type underType = Enum.GetUnderlyingType(desiredType);
-						return NumericConversions.DoubleToType(underType, value.Number);
+						return Enum.ToObject(desiredType, NumericConversions.DoubleToType(underType, value.Number));
 					}
 
                     if (NumericConversions.NumericTypes.Contains(desiredType))

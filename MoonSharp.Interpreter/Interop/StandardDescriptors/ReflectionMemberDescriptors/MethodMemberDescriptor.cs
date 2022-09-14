@@ -244,7 +244,12 @@ namespace MoonSharp.Interpreter.Interop
 					else
 					{
 						var x = Expression.ArrayIndex(ep, Expression.Constant(i));
-						args[i] = Expression.Convert(x, parameters[i].OriginalType);
+						var paramType = parameters[i].OriginalType;
+						var @null = Expression.Constant(null, typeof(object));
+						args[i] = Expression.Condition(
+							test: Expression.Equal(x, @null),
+							ifTrue: Expression.Default(paramType),
+							ifFalse: Expression.Convert(x, paramType));
 					}
 				}
 
