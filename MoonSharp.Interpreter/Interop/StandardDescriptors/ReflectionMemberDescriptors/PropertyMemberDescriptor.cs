@@ -118,6 +118,9 @@ namespace MoonSharp.Interpreter.Interop
 			if (Script.GlobalOptions.Platform.IsRunningOnAOT())
 				accessMode = InteropAccessMode.Reflection;
 
+			if (pi.PropertyType.IsByRef)
+				accessMode = InteropAccessMode.Reflection;
+
 			this.PropertyInfo = pi;
 			this.AccessMode = accessMode;
 			this.Name = pi.Name;
@@ -167,6 +170,11 @@ namespace MoonSharp.Interpreter.Interop
 			{
 				if (m_Getter != null)
 				{
+					if (this.PropertyInfo.PropertyType.IsByRef)
+					{
+						throw new InternalErrorException("Out/Ref properties cannot be precompiled.");
+					}
+
 					if (IsStatic)
 					{
 						var paramExp = Expression.Parameter(typeof(object), "dummy");
