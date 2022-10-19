@@ -769,7 +769,7 @@ namespace MoonSharp.Interpreter
 					return Table == other.Table;
 				case DataType.Tuple:
 				case DataType.TailCallRequest:
-					return Tuple == other.Tuple;
+					return Tuple.SequenceEqual(other.Tuple);
 				case DataType.Thread:
 					return Coroutine == other.Coroutine;
 				case DataType.UserData:
