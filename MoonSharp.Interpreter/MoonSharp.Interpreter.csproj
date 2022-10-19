@@ -5,9 +5,10 @@
     <Copyright>(C) 2014-2016 Marco Mastropaolo</Copyright>
     <AssemblyTitle>MoonSharp.Interpreter</AssemblyTitle>
     <VersionPrefix>2.0.0</VersionPrefix>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
     <DefineConstants>$(DefineConstants);DOTNET_CORE;NETFX_CORE</DefineConstants>
     <AssemblyName>MoonSharp.Interpreter</AssemblyName>
+    <WarningsAsErrors>CA1304,CA1305</WarningsAsErrors>
   </PropertyGroup>
 
 </Project>

@@ -835,9 +835,9 @@ namespace MoonSharp.Interpreter.CoreLib.StringLib
 								}
 
 								if (isfollowedbynum)
-									LuaLAddString(b, string.Format("\\{0:000}", (int)s[0]));
+									LuaLAddString(b, $"\\{(int) s[0]:000}");
 								else
-									LuaLAddString(b, string.Format("\\{0}", (int)s[0]));
+									LuaLAddString(b, $"\\{(int) s[0]}");
 							}
 							else
 							{
