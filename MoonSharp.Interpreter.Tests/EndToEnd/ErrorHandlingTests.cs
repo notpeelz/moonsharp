@@ -127,5 +127,24 @@ return a()
 			Assert.AreEqual("!cba", res.String);
 		}
 
+		private class Experiment
+		{
+			public Experiment()
+			{
+				throw new ScriptRuntimeException("Failure");
+			}
+		}
+
+		[Test]
+		public void PCallCtor()
+		{
+			UserData.RegisterType<Experiment>();
+
+			var script = new Script();
+			script.Globals["Experiment"] = UserData.CreateStatic<Experiment>();
+
+			script.DoString("pcall(|| Experiment.__new())");
+		}
+
 	}
 }
