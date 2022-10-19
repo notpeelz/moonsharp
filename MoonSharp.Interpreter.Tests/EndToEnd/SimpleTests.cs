@@ -1556,5 +1556,49 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
         	}
 
 
+		[Test]
+		public void StackIsCleanWithLocals()
+		{
+			Assert.AreEqual(DynValue.Nil, Script.RunString(@"
+				local function test()
+				   for k, v in pairs{1} do
+				       local my
+						return my
+				   end
+				end
+				return test()"
+			));
+			
+			Assert.AreEqual(DynValue.NewTuple(DynValue.Nil, DynValue.Nil), Script.RunString(@"
+				local function test()
+				   for k, v in pairs{1} do
+				       local my, de
+						return my, de
+				   end
+				end
+				return test()"
+			));
+
+			Assert.That(DynValue.NewTuple(DynValue.NewNumber(42), DynValue.Nil), Is.EqualTo(Script.RunString(@"
+				local function test()
+				   for k, v in pairs{1} do
+				       local my, de = 42
+						return my, de
+				   end
+				end
+				return test()"
+			)));
+
+			Assert.AreEqual(DynValue.NewTuple(DynValue.NewNumber(42), DynValue.Nil), Script.RunString(@"
+				local function test()
+				   for k, v in pairs{1} do
+				       local my = 42, de
+						return my, de
+				   end
+				end
+				return test()"
+			));
+		}
+
 	}
 }
