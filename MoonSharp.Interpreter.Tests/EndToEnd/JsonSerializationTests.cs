@@ -141,14 +141,16 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 		}
 
 		[Test]
-		public void SerializeNoLocalize() {
+		public void SerializeNoLocalize()
+		{
 			// German uses , as a decimal separator, we don't want that
 			Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
 			Assert.AreEqual("{\"test\":0.01}", Script.RunString("return json.serialize({test = 0.01})").String);
 		}
 
 		[Test]
-		public void ParseNoLocalize() {
+		public void ParseNoLocalize()
+		{
 			// German uses , as a decimal separator, we don't want that
 			Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
 			Assert.AreEqual(1.23, Script.RunString("return json.parse('{\"test\":1.23}').test").Number);
