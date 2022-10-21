@@ -201,9 +201,9 @@ namespace MoonSharp.Interpreter.Tests.EndToEnd
 		{
 			string keywrd = "and break do else elseif end false end for function end goto if ::in:: in local nil not [or][[][==][[]] repeat return { then 0 end return; }; then true (x != 5 or == * 3 - 5) x";
 
-			string script = string.Format(@"    
-				x = '{0}';
-				return x;", keywrd);
+			string script = $@"    
+				x = '{keywrd}';
+				return x;";
 
 			DynValue res = Script.RunString(script);
 			Assert.AreEqual(DataType.String, res.Type);
