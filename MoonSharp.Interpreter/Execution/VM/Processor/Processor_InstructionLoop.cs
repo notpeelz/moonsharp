@@ -26,246 +26,244 @@ namespace MoonSharp.Interpreter.Execution.VM
 
 			try
 			{
-				try
+				while (true)
 				{
-					while (true)
+					Instruction i = m_RootChunk.Code[instructionPtr];
+
+					if (m_Debug.DebuggerAttached != null)
 					{
-						Instruction i = m_RootChunk.Code[instructionPtr];
-
-						if (m_Debug.DebuggerAttached != null)
-						{
-							ListenDebugger(i, instructionPtr);
-						}
-
-						++executedInstructions;
-
-						if (canAutoYield && executedInstructions > AutoYieldCounter)
-						{
-							m_SavedInstructionPtr = instructionPtr;
-							return DynValue.NewForcedYieldReq();
-						}
-
-						++instructionPtr;
-
-						switch (i.OpCode)
-						{
-							case OpCode.Nop:
-							case OpCode.Debug:
-							case OpCode.Meta:
-								break;
-							case OpCode.Pop:
-								m_ValueStack.RemoveLast(i.NumVal);
-								break;
-							case OpCode.Copy:
-								m_ValueStack.Push(m_ValueStack.Peek(i.NumVal));
-								break;
-							case OpCode.Swap:
-								ExecSwap(i);
-								break;
-							case OpCode.Literal:
-								m_ValueStack.Push(i.Value);
-								break;
-							case OpCode.Add:
-								instructionPtr = ExecAdd(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Concat:
-								instructionPtr = ExecConcat(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Neg:
-								instructionPtr = ExecNeg(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Sub:
-								instructionPtr = ExecSub(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Mul:
-								instructionPtr = ExecMul(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Div:
-								instructionPtr = ExecDiv(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Mod:
-								instructionPtr = ExecMod(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Power:
-								instructionPtr = ExecPower(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Eq:
-								instructionPtr = ExecEq(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.LessEq:
-								instructionPtr = ExecLessEq(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Less:
-								instructionPtr = ExecLess(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Len:
-								instructionPtr = ExecLen(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Call:
-							case OpCode.ThisCall:
-								instructionPtr = Internal_ExecCall(i.NumVal, instructionPtr, null, null, i.OpCode == OpCode.ThisCall, i.Name);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Scalar:
-								m_ValueStack.Push(m_ValueStack.Pop().ToScalar());
-								break;
-							case OpCode.Not:
-								ExecNot(i);
-								break;
-							case OpCode.CNot:
-								ExecCNot(i);
-								break;
-							case OpCode.JfOrPop:
-							case OpCode.JtOrPop:
-								instructionPtr = ExecShortCircuitingOperator(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.JNil:
-								{
-									DynValue v = m_ValueStack.Pop().ToScalar();
-
-									if (v.Type == DataType.Nil || v.Type == DataType.Void)
-										instructionPtr = i.NumVal;
-								}
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Jf:
-								instructionPtr = JumpBool(i, false, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Jump:
-								instructionPtr = i.NumVal;
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.MkTuple:
-								ExecMkTuple(i);
-								break;
-							case OpCode.Clean:
-								ClearBlockData(i);
-								break;
-							case OpCode.Closure:
-								ExecClosure(i);
-								break;
-							case OpCode.BeginFn:
-								ExecBeginFn(i);
-								break;
-							case OpCode.ToBool:
-								m_ValueStack.Push(DynValue.NewBoolean(m_ValueStack.Pop().ToScalar().CastToBool()));
-								break;
-							case OpCode.Args:
-								ExecArgs(i);
-								break;
-							case OpCode.Ret:
-								instructionPtr = ExecRet(i);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								if (instructionPtr < 0)
-									goto return_to_native_code;
-								break;
-							case OpCode.Incr:
-								ExecIncr(i);
-								break;
-							case OpCode.ToNum:
-								ExecToNum(i);
-								break;
-							case OpCode.JFor:
-								instructionPtr = ExecJFor(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.NewTable:
-								if (i.NumVal == 0)
-									m_ValueStack.Push(DynValue.NewTable(this.m_Script));
-								else
-									m_ValueStack.Push(DynValue.NewPrimeTable());
-								break;
-							case OpCode.IterPrep:
-								ExecIterPrep(i);
-								break;
-							case OpCode.IterUpd:
-								ExecIterUpd(i);
-								break;
-							case OpCode.ExpTuple:
-								ExecExpTuple(i);
-								break;
-							case OpCode.Local:
-								var scope = m_ExecutionStack.Peek().LocalScope;
-								var index = i.Symbol.i_Index;
-								m_ValueStack.Push(scope[index].AsReadOnly());
-								break;
-							case OpCode.Upvalue:
-								m_ValueStack.Push(m_ExecutionStack.Peek().ClosureScope[i.Symbol.i_Index].AsReadOnly());
-								break;
-							case OpCode.StoreUpv:
-								ExecStoreUpv(i);
-								break;
-							case OpCode.StoreLcl:
-								ExecStoreLcl(i);
-								break;
-							case OpCode.TblInitN:
-								ExecTblInitN(i);
-								break;
-							case OpCode.TblInitI:
-								ExecTblInitI(i);
-								break;
-							case OpCode.Index:
-							case OpCode.IndexN:
-							case OpCode.IndexL:
-								instructionPtr = ExecIndex(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.IndexSet:
-							case OpCode.IndexSetN:
-							case OpCode.IndexSetL:
-								instructionPtr = ExecIndexSet(i, instructionPtr);
-								if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
-								break;
-							case OpCode.Invalid:
-								throw new NotImplementedException(string.Format("Invalid opcode : {0}", i.Name));
-							default:
-								throw new NotImplementedException(string.Format("Execution for {0} not implented yet!", i.OpCode));
-						}
+						ListenDebugger(i, instructionPtr);
 					}
 
-				yield_to_calling_coroutine:
+					++executedInstructions;
 
-					DynValue yieldRequest = m_ValueStack.Pop().ToScalar();
+					if (canAutoYield && executedInstructions > AutoYieldCounter)
+					{
+						m_SavedInstructionPtr = instructionPtr;
+						return DynValue.NewForcedYieldReq();
+					}
 
-					if (m_CanYield)
-						return yieldRequest;
-					else if (this.State == CoroutineState.Main)
-						throw ScriptRuntimeException.CannotYieldMain();
-					else
-						throw ScriptRuntimeException.CannotYield();
+					++instructionPtr;
+
+					switch (i.OpCode)
+					{
+						case OpCode.Nop:
+						case OpCode.Debug:
+						case OpCode.Meta:
+							break;
+						case OpCode.Pop:
+							m_ValueStack.RemoveLast(i.NumVal);
+							break;
+						case OpCode.Copy:
+							m_ValueStack.Push(m_ValueStack.Peek(i.NumVal));
+							break;
+						case OpCode.Swap:
+							ExecSwap(i);
+							break;
+						case OpCode.Literal:
+							m_ValueStack.Push(i.Value);
+							break;
+						case OpCode.Add:
+							instructionPtr = ExecAdd(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Concat:
+							instructionPtr = ExecConcat(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Neg:
+							instructionPtr = ExecNeg(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Sub:
+							instructionPtr = ExecSub(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Mul:
+							instructionPtr = ExecMul(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Div:
+							instructionPtr = ExecDiv(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Mod:
+							instructionPtr = ExecMod(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Power:
+							instructionPtr = ExecPower(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Eq:
+							instructionPtr = ExecEq(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.LessEq:
+							instructionPtr = ExecLessEq(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Less:
+							instructionPtr = ExecLess(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Len:
+							instructionPtr = ExecLen(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Call:
+						case OpCode.ThisCall:
+							instructionPtr = Internal_ExecCall(i.NumVal, instructionPtr, null, null, i.OpCode == OpCode.ThisCall, i.Name);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Scalar:
+							m_ValueStack.Push(m_ValueStack.Pop().ToScalar());
+							break;
+						case OpCode.Not:
+							ExecNot(i);
+							break;
+						case OpCode.CNot:
+							ExecCNot(i);
+							break;
+						case OpCode.JfOrPop:
+						case OpCode.JtOrPop:
+							instructionPtr = ExecShortCircuitingOperator(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.JNil:
+							{
+								DynValue v = m_ValueStack.Pop().ToScalar();
+
+								if (v.Type == DataType.Nil || v.Type == DataType.Void)
+									instructionPtr = i.NumVal;
+							}
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Jf:
+							instructionPtr = JumpBool(i, false, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Jump:
+							instructionPtr = i.NumVal;
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.MkTuple:
+							ExecMkTuple(i);
+							break;
+						case OpCode.Clean:
+							ClearBlockData(i);
+							break;
+						case OpCode.Closure:
+							ExecClosure(i);
+							break;
+						case OpCode.BeginFn:
+							ExecBeginFn(i);
+							break;
+						case OpCode.ToBool:
+							m_ValueStack.Push(DynValue.NewBoolean(m_ValueStack.Pop().ToScalar().CastToBool()));
+							break;
+						case OpCode.Args:
+							ExecArgs(i);
+							break;
+						case OpCode.Ret:
+							instructionPtr = ExecRet(i);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							if (instructionPtr < 0)
+								goto return_to_native_code;
+							break;
+						case OpCode.Incr:
+							ExecIncr(i);
+							break;
+						case OpCode.ToNum:
+							ExecToNum(i);
+							break;
+						case OpCode.JFor:
+							instructionPtr = ExecJFor(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.NewTable:
+							if (i.NumVal == 0)
+								m_ValueStack.Push(DynValue.NewTable(this.m_Script));
+							else
+								m_ValueStack.Push(DynValue.NewPrimeTable());
+							break;
+						case OpCode.IterPrep:
+							ExecIterPrep(i);
+							break;
+						case OpCode.IterUpd:
+							ExecIterUpd(i);
+							break;
+						case OpCode.ExpTuple:
+							ExecExpTuple(i);
+							break;
+						case OpCode.Local:
+							var scope = m_ExecutionStack.Peek().LocalScope;
+							var index = i.Symbol.i_Index;
+							m_ValueStack.Push(scope[index].AsReadOnly());
+							break;
+						case OpCode.Upvalue:
+							m_ValueStack.Push(m_ExecutionStack.Peek().ClosureScope[i.Symbol.i_Index].AsReadOnly());
+							break;
+						case OpCode.StoreUpv:
+							ExecStoreUpv(i);
+							break;
+						case OpCode.StoreLcl:
+							ExecStoreLcl(i);
+							break;
+						case OpCode.TblInitN:
+							ExecTblInitN(i);
+							break;
+						case OpCode.TblInitI:
+							ExecTblInitI(i);
+							break;
+						case OpCode.Index:
+						case OpCode.IndexN:
+						case OpCode.IndexL:
+							instructionPtr = ExecIndex(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.IndexSet:
+						case OpCode.IndexSetN:
+						case OpCode.IndexSetL:
+							instructionPtr = ExecIndexSet(i, instructionPtr);
+							if (instructionPtr == YIELD_SPECIAL_TRAP) goto yield_to_calling_coroutine;
+							break;
+						case OpCode.Invalid:
+							throw new NotImplementedException(string.Format("Invalid opcode : {0}", i.Name));
+						default:
+							throw new NotImplementedException(string.Format("Execution for {0} not implented yet!", i.OpCode));
+					}
 				}
-				catch (TargetInvocationException ex)
-				{
-					throw ex.InnerException;
+
+			yield_to_calling_coroutine:
+
+				DynValue yieldRequest = m_ValueStack.Pop().ToScalar();
+
+				if (m_CanYield)
+					return yieldRequest;
+				else if (this.State == CoroutineState.Main)
+					throw ScriptRuntimeException.CannotYieldMain();
+				else
+					throw ScriptRuntimeException.CannotYield();
 				}
-			}	
-			catch (InterpreterException ex)
+			catch (Exception ex)
 			{
-				FillDebugData(ex, instructionPtr);
+				if (ex is TargetInvocationException)
+					ex = ex.InnerException;
 
-				if (!(ex is ScriptRuntimeException))
-				{
-					ex.Rethrow();
-					throw;
+				var iex = ex as InterpreterException ?? new NetRuntimeException(ex);
+				FillDebugData(iex, instructionPtr);
+				
+				for (int i = 0; i < m_ExecutionStack.Count; i++) {
+					var c = m_ExecutionStack.Peek(i);
+
+					if (c.ErrorHandlerBeforeUnwind != null)
+						iex.DecoratedMessage = PerformMessageDecorationBeforeUnwind(c.ErrorHandlerBeforeUnwind, iex.DecoratedMessage, GetCurrentSourceRef(instructionPtr));
 				}
 
-				if (m_Debug.DebuggerAttached != null)
+				if (ex is ScriptRuntimeException sex && m_Debug.DebuggerAttached != null)
 				{
-					if (m_Debug.DebuggerAttached.SignalRuntimeException((ScriptRuntimeException)ex))
+					if (m_Debug.DebuggerAttached.SignalRuntimeException(sex))
 					{
 						if (instructionPtr >= 0 && instructionPtr < this.m_RootChunk.Code.Count)
 						{
@@ -273,15 +271,6 @@ namespace MoonSharp.Interpreter.Execution.VM
 						}
 					}
 				}
-
-				for (int i = 0; i < m_ExecutionStack.Count; i++)
-				{
-					var c = m_ExecutionStack.Peek(i);
-
-					if (c.ErrorHandlerBeforeUnwind != null)
-						ex.DecoratedMessage = PerformMessageDecorationBeforeUnwind(c.ErrorHandlerBeforeUnwind, ex.DecoratedMessage, GetCurrentSourceRef(instructionPtr));
-				}
-
 
 				while (m_ExecutionStack.Count > 0)
 				{
@@ -297,7 +286,7 @@ namespace MoonSharp.Interpreter.Execution.VM
 							m_ValueStack.RemoveLast(argscnt + 1);
 						}
 
-						var cbargs = new DynValue[] { DynValue.NewString(ex.DecoratedMessage) };
+						var cbargs = new DynValue[] { DynValue.NewString(iex.DecoratedMessage) };
 
 						DynValue handled = csi.ErrorHandler.Invoke(new ScriptExecutionContext(this, csi.ErrorHandler, GetCurrentSourceRef(instructionPtr)), cbargs);
 
@@ -307,23 +296,16 @@ namespace MoonSharp.Interpreter.Execution.VM
 					}
 					else if ((csi.Flags & CallStackItemFlags.EntryPoint) != 0)
 					{
-						ex.Rethrow();
-						throw;
+						break;
 					}
 				}
 
-				ex.Rethrow();
-				throw;
-            }
-            catch (Exception ex)
-            {
-				NetRuntimeException exception = new NetRuntimeException(ex);
-
-				FillDebugData(exception, instructionPtr);
-
-
-				throw exception;
-            }
+				iex.Rethrow();
+				if (ex is InterpreterException)
+					throw;
+				else
+					throw iex;
+			}
 
 		return_to_native_code:
 			return m_ValueStack.Pop();
