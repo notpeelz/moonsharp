@@ -148,7 +148,7 @@ return a()
 		{
 			var script = new Script();
 			script.Globals["test"] = (Action)(() => throw new NotImplementedException("as"));
-			var ex = Assert.Throws<NetRuntimeException>( () => script.DoString("pcall(test)"));
+			var ex = Assert.Throws<NetRuntimeException>(() => script.DoString("pcall(test)"));
 			Assert.That(ex.InnerException is NotImplementedException);
 			Script.GlobalOptions.ShouldPCallCatchException = _ => true;
 			Assert.DoesNotThrow(() => script.DoString("pcall(test)"));
