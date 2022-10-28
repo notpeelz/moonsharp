@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 
 namespace MoonSharp.Interpreter.Tests.EndToEnd
@@ -125,6 +122,36 @@ return a()
 
 			Assert.AreEqual(DataType.String, res.Type);
 			Assert.AreEqual("!cba", res.String);
+		}
+
+		private class Experiment
+		{
+			public Experiment()
+			{
+				throw new ScriptRuntimeException("Failure");
+			}
+		}
+
+		[Test]
+		public void PCallCtor()
+		{
+			UserData.RegisterType<Experiment>();
+
+			var script = new Script();
+			script.Globals["Experiment"] = UserData.CreateStatic<Experiment>();
+
+			script.DoString("pcall(|| Experiment.__new())");
+		}
+
+		[Test]
+		public void PCallOptions()
+		{
+			var script = new Script();
+			script.Globals["test"] = (Action)(() => throw new NotImplementedException("as"));
+			var ex = Assert.Throws<NetRuntimeException>(() => script.DoString("pcall(test)"));
+			Assert.That(ex.InnerException is NotImplementedException);
+			Script.GlobalOptions.ShouldPCallCatchException = _ => true;
+			Assert.DoesNotThrow(() => script.DoString("pcall(test)"));
 		}
 
 	}
