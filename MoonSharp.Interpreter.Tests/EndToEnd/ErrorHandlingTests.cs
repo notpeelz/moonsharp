@@ -124,6 +124,12 @@ return a()
 			Assert.AreEqual("!cba", res.String);
 		}
 
+		[Test]
+		public void StackOverflow()
+		{
+			Assert.Throws<ScriptStackOverflowException>(() => Script.RunString("function f() f() end f()"));
+		}
+		
 		private class Experiment
 		{
 			public Experiment()
